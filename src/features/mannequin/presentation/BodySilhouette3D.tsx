@@ -30,6 +30,7 @@ import {
 } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { CameraControls, Html, useGLTF } from "@react-three/drei";
+import CameraControlsImpl from "camera-controls";
 import * as THREE from "three";
 import { clsx } from "clsx";
 import { useTheme } from "next-themes";
@@ -428,6 +429,24 @@ function CameraController({
   focusPoint: [number, number, number] | null;
   controlsRef: React.RefObject<ComponentRef<typeof CameraControls> | null>;
 }) {
+  // ─── Gestes mobiles natifs ────────────────────────────────────────────
+  // 1 doigt  : rotation azimutale (le vertical est laissé au scroll de la
+  //            page via touch-action: pan-y sur le conteneur).
+  // 2 doigts : pinch = zoom (dolly). C'était bloqué par dollySpeed=0.
+  // Molette  : neutralisée — le scroll desktop ne doit jamais être capturé.
+  useEffect(() => {
+    const c = controlsRef.current;
+    if (!c) return;
+    const A = CameraControlsImpl.ACTION;
+    c.touches.one = A.TOUCH_ROTATE;
+    c.touches.two = A.TOUCH_DOLLY;
+    c.touches.three = A.NONE;
+    c.mouseButtons.wheel = A.NONE;
+    c.mouseButtons.left = A.ROTATE;
+    c.mouseButtons.right = A.NONE;
+    c.mouseButtons.middle = A.NONE;
+  }, [controlsRef]);
+
   useEffect(() => {
     const c = controlsRef.current;
     if (!c) return;
@@ -535,7 +554,10 @@ export function BodySilhouette3D({
   return (
     <div
       className={clsx("relative w-full max-w-[380px] mx-auto", className)}
-      style={{ aspectRatio: "3 / 4", touchAction: "none" }}
+      // pan-y : un doigt vertical fait défiler la PAGE (le canvas ne
+      // confisque plus le scroll) ; l'horizontal tourne le mannequin,
+      // le pinch à deux doigts zoome.
+      style={{ aspectRatio: "3 / 4", touchAction: "pan-y" }}
     >
       <Canvas
         shadows={{ type: THREE.PCFShadowMap }}
@@ -595,10 +617,10 @@ export function BodySilhouette3D({
           maxPolarAngle={Math.PI / 2 + 0.15}
           polarRotateSpeed={0.6}
           azimuthRotateSpeed={0.9}
-          dollySpeed={0}
+          dollySpeed={0.7}
           truckSpeed={0}
-          minDistance={0.3}
-          maxDistance={5}
+          minDistance={0.35}
+          maxDistance={4.5}
           smoothTime={0.25}
           draggingSmoothTime={0.04}
         />
@@ -628,7 +650,7 @@ export function BodySilhouette3D({
 
       <div className="absolute bottom-2 right-2 px-3 py-1.5 bg-background/95 backdrop-blur border border-outline-variant text-[9px] uppercase tracking-widest font-mono text-outline z-10 flex items-center gap-1.5">
         <Icon name="360" size={11} />
-        Glisse pour tourner
+        Tourner · pincer pour zoomer
       </div>
 
       {!readOnly && filledCount === 0 && !previewPoint && (

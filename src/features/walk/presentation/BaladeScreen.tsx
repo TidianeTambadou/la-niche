@@ -13,6 +13,7 @@ import {
 } from "@/features/walk/infrastructure/walk-repository";
 import { listWishlist } from "@/features/wishlist/infrastructure/wishlist-repository";
 import { haptic } from "@/shared/lib/haptics";
+import { toast } from "@/shared/ui/Toaster";
 import { ActiveWalk } from "./ActiveWalk";
 import { WalkBriefOverlay } from "./WalkBriefOverlay";
 
@@ -64,6 +65,11 @@ export function BaladeScreen() {
       haptic("success");
       setState({ phase: "active", walk, applications: [] });
       setShowBrief(true);
+    } catch (e) {
+      toast(
+        e instanceof Error ? e.message : "Impossible d'ouvrir la session",
+        "error",
+      );
     } finally {
       setStarting(false);
     }

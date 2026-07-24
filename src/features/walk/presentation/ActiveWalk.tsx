@@ -15,11 +15,13 @@ import type { WishlistItem } from "@/features/wishlist/domain/wishlist-item";
 import {
   addApplication,
   addImpression,
+  deleteApplication,
   endWalk,
   setVerdict,
   type ApplicationWithInsights,
   type Verdict,
 } from "@/features/walk/infrastructure/walk-repository";
+import { toast } from "@/shared/ui/Toaster";
 import { Icon } from "@/shared/ui/Icon";
 import { haptic } from "@/shared/lib/haptics";
 import { WalkChrono } from "./WalkChrono";
@@ -150,6 +152,7 @@ export function ActiveWalk({
   const handleConfirm = useCallback(
     async (result: PlacementResult) => {
       if (!draft) return;
+      try {
       const created = await addApplication({
         walkId: walk.id,
         wishlistItemId: result.wishlistItemId,
@@ -173,6 +176,12 @@ export function ActiveWalk({
           flyPhotoToBody(result.flyFrom!, result.previewUrl!),
         );
       }
+      } catch (e) {
+        toast(
+          e instanceof Error ? e.message : "Pose non enregistrée",
+          "error",
+        );
+      }
     },
     [draft, walk.id, flyPhotoToBody],
   );
@@ -181,15 +190,44 @@ export function ActiveWalk({
     setApplications((prev) =>
       prev.map((a) => (a.id === id ? { ...a, verdict } : a)),
     );
-    setVerdict(id, verdict).catch(() => {});
+    setVerdict(id, verdict).catch(() => {
+      toast("Verdict non enregistré — migration 002 appliquée ?", "error");
+    });
   }, []);
 
   const handleAddImpression = useCallback(
     async (app: ApplicationWithInsights, text: string) => {
-      const next = await addImpression(app.id, app.impressions, text);
-      setApplications((prev) =>
-        prev.map((a) => (a.id === app.id ? { ...a, impressions: next } : a)),
-      );
+      try {
+        const next = await addImpression(app.id, app.impressions, text);
+        setApplications((prev) =>
+          prev.map((a) => (a.id === app.id ? { ...a, impressions: next } : a)),
+        );
+      } catch {
+        toast("Impression non enregistrée — migration 002 appliquée ?", "error");
+      }
+    },
+    [],
+  );
+
+  const handleDeleteApplication = useCallback(
+    async (app: ApplicationWithInsights) => {
+      try {
+        await deleteApplication(app.id, app.photoPath);
+        setApplications((prev) => {
+          const next = prev.filter((a) => a.id !== app.id);
+          // Plus rien sur cette zone → le sheet n'a plus de sujet.
+          if (!next.some((a) => a.bodyZone === app.bodyZone)) {
+            setOpenZone(null);
+          }
+          return next;
+        });
+        toast("Pose supprimée", "success");
+      } catch (e) {
+        toast(
+          e instanceof Error ? e.message : "Échec de la suppression",
+          "error",
+        );
+      }
     },
     [],
   );
@@ -200,6 +238,11 @@ export function ActiveWalk({
     try {
       await endWalk(walk.id);
       setEnded(true);
+    } catch (e) {
+      toast(
+        e instanceof Error ? e.message : "Impossible de terminer la balade",
+        "error",
+      );
     } finally {
       setEndBusy(false);
     }
@@ -310,6 +353,7 @@ export function ActiveWalk({
         onClose={() => setOpenZone(null)}
         onSetVerdict={handleSetVerdict}
         onAddImpression={handleAddImpression}
+        onDeleteApplication={handleDeleteApplication}
       />
 
       {ended && (

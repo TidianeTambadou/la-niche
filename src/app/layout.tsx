@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono, Cormorant_Garamond } from "next/font/google";
 import { ThemeProvider } from "@/shared/ui/ThemeProvider";
+import { Toaster } from "@/shared/ui/Toaster";
 import "./globals.css";
 
 const inter = Inter({
@@ -72,6 +73,7 @@ export default function RootLayout({
       <body className="min-h-[100dvh] bg-background text-on-background flex flex-col">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

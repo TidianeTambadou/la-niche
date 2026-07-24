@@ -6,6 +6,7 @@ import { BottomSheet } from "@/shared/ui/BottomSheet";
 import { Icon } from "@/shared/ui/Icon";
 import { PhotoThumb } from "@/shared/ui/PhotoThumb";
 import { SmartNoteField } from "@/shared/ui/SmartNoteField";
+import { toast } from "@/shared/ui/Toaster";
 import { NOTE_CHIPS } from "@/shared/lib/olfactory-lexicon";
 import { uploadPhoto } from "@/shared/lib/supabase/storage";
 import {
@@ -103,6 +104,8 @@ export function WishlistEditSheet({ item, onClose, onSave, onDelete }: Props) {
         photoPath,
       });
       onClose();
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Échec de l'enregistrement", "error");
     } finally {
       setBusy(false);
     }
@@ -113,7 +116,10 @@ export function WishlistEditSheet({ item, onClose, onSave, onDelete }: Props) {
     setBusy(true);
     try {
       await onDelete(item.id);
+      toast("Parfum retiré", "success");
       onClose();
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Échec de la suppression", "error");
     } finally {
       setBusy(false);
     }
@@ -215,11 +221,11 @@ export function WishlistEditSheet({ item, onClose, onSave, onDelete }: Props) {
         </button>
       </div>
 
+      {/* Sans `capture` : iOS propose Photothèque OU Appareil photo. */}
       <input
         ref={fileRef}
         type="file"
         accept="image/*"
-        capture="environment"
         className="hidden"
         onChange={async (e) => {
           const file = e.target.files?.[0];
@@ -228,6 +234,12 @@ export function WishlistEditSheet({ item, onClose, onSave, onDelete }: Props) {
           setBusy(true);
           try {
             setPhotoPath(await uploadPhoto(file));
+            toast("Photo enregistrée", "success");
+          } catch (err) {
+            toast(
+              err instanceof Error ? err.message : "Échec de l'envoi",
+              "error",
+            );
           } finally {
             setBusy(false);
           }

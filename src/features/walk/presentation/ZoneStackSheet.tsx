@@ -48,6 +48,7 @@ type Props = {
   onClose: () => void;
   onSetVerdict?: (id: string, verdict: Verdict | null) => void;
   onAddImpression?: (app: ApplicationWithInsights, text: string) => Promise<void>;
+  onDeleteApplication?: (app: ApplicationWithInsights) => Promise<void>;
 };
 
 /**
@@ -62,6 +63,7 @@ export function ZoneStackSheet({
   onClose,
   onSetVerdict,
   onAddImpression,
+  onDeleteApplication,
 }: Props) {
   // Pile : la plus récente d'abord.
   const stack = [...applications].reverse();
@@ -201,8 +203,22 @@ export function ZoneStackSheet({
 
       {/* ─── Verdict ─── */}
       <div className="mt-6 flex items-center justify-between border-t-2 border-on-background pt-4">
-        <span className="font-mono text-xs uppercase tracking-widest opacity-60">
+        <span className="font-mono text-xs uppercase tracking-widest opacity-60 inline-flex items-center gap-3">
           Verdict
+          {!readOnly && onDeleteApplication && (
+            <button
+              type="button"
+              aria-label="Supprimer cette pose"
+              onClick={async () => {
+                const target = current;
+                setIndex(0);
+                await onDeleteApplication(target);
+              }}
+              className="w-7 h-7 border border-on-background/40 hover:border-on-background flex items-center justify-center active:scale-95 transition-all opacity-70 hover:opacity-100"
+            >
+              <Icon name="delete" size={13} />
+            </button>
+          )}
         </span>
         <button
           type="button"

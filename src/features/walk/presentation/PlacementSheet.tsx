@@ -5,6 +5,7 @@ import { clsx } from "clsx";
 import { BottomSheet } from "@/shared/ui/BottomSheet";
 import { Icon } from "@/shared/ui/Icon";
 import { SmartNoteField } from "@/shared/ui/SmartNoteField";
+import { toast } from "@/shared/ui/Toaster";
 import { NOTE_CHIPS } from "@/shared/lib/olfactory-lexicon";
 import { uploadPhoto } from "@/shared/lib/supabase/storage";
 import {
@@ -59,6 +60,7 @@ export function PlacementSheet({
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const galleryRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<HTMLImageElement>(null);
 
   const activePerfume = selected ?? preselected;
@@ -88,6 +90,12 @@ export function PlacementSheet({
     setPreviewUrl(URL.createObjectURL(file));
     try {
       setPhotoPath(await uploadPhoto(file));
+    } catch (e) {
+      setPreviewUrl(null);
+      toast(
+        e instanceof Error ? e.message : "Échec de l'envoi de la photo",
+        "error",
+      );
     } finally {
       setUploading(false);
     }
@@ -156,16 +164,26 @@ export function PlacementSheet({
             </span>
           </button>
         ) : (
-          <button
-            type="button"
-            onClick={() => fileRef.current?.click()}
-            className="press-cta w-full h-28 bg-on-background text-background border-2 border-on-background shadow-[4px_4px_0px_0px_currentColor] flex flex-col items-center justify-center gap-1.5"
-          >
-            <Icon name="photo_camera" size={28} />
-            <span className="font-sans font-semibold text-xs tracking-widest uppercase">
-              Photographier le flacon
-            </span>
-          </button>
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              className="press-cta w-full h-24 bg-on-background text-background border-2 border-on-background shadow-[4px_4px_0px_0px_currentColor] flex flex-col items-center justify-center gap-1.5"
+            >
+              <Icon name="photo_camera" size={26} />
+              <span className="font-sans font-semibold text-xs tracking-widest uppercase">
+                Photographier le flacon
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => galleryRef.current?.click()}
+              className="self-center font-mono text-[10px] uppercase tracking-widest opacity-60 hover:opacity-100 underline-offset-4 hover:underline inline-flex items-center gap-1.5"
+            >
+              <Icon name="photo_library" size={13} />
+              Choisir dans la photothèque
+            </button>
+          </div>
         )}
       </div>
 
@@ -257,11 +275,23 @@ export function PlacementSheet({
         </button>
       </div>
 
+      {/* Caméra directe (geste boutique) */}
       <input
         ref={fileRef}
         type="file"
         accept="image/*"
         capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          handlePhoto(e.target.files?.[0]);
+          e.target.value = "";
+        }}
+      />
+      {/* Photothèque (photo déjà prise) */}
+      <input
+        ref={galleryRef}
+        type="file"
+        accept="image/*"
         className="hidden"
         onChange={(e) => {
           handlePhoto(e.target.files?.[0]);

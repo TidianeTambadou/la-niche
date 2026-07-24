@@ -147,6 +147,13 @@ export async function listWalks(): Promise<Walk[]> {
   return (data as WalkRow[]).map(mapWalk);
 }
 
+/** Supprime la balade ET ses poses (cascade FK). */
+export async function deleteWalk(id: string): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase.from("walks").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 export async function getWalk(id: string): Promise<Walk | null> {
   const supabase = createClient();
   const { data, error } = await supabase
@@ -214,6 +221,23 @@ export async function addApplication(
     .single();
   if (error) throw new Error(error.message);
   return mapApplication(data as ApplicationRow);
+}
+
+/** Supprime une pose (et sa photo, en best-effort). */
+export async function deleteApplication(
+  id: string,
+  photoPath?: string | null,
+): Promise<void> {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from("walk_applications")
+    .delete()
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  if (photoPath) {
+    // Nettoyage silencieux : une photo orpheline n'est pas bloquante.
+    supabase.storage.from("photos").remove([photoPath]).then(() => {});
+  }
 }
 
 export async function setVerdict(

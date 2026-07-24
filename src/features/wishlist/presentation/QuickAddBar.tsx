@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { Icon } from "@/shared/ui/Icon";
+import { toast } from "@/shared/ui/Toaster";
 import { uploadPhoto } from "@/shared/lib/supabase/storage";
 
 type Props = {
@@ -29,6 +30,8 @@ export function QuickAddBar({ onAdd }: Props) {
       await onAdd(trimmed, pendingPhoto);
       setName("");
       setPendingPhoto(null);
+    } catch (e) {
+      toast(e instanceof Error ? e.message : "Échec de l'ajout", "error");
     } finally {
       setBusy(false);
     }
@@ -45,7 +48,15 @@ export function QuickAddBar({ onAdd }: Props) {
       if (!name.trim()) {
         await onAdd("Flacon à identifier", path);
         setPendingPhoto(null);
+        toast("Flacon ajouté — nomme-le quand tu veux", "success");
+      } else {
+        toast("Photo prête", "success");
       }
+    } catch (e) {
+      toast(
+        e instanceof Error ? e.message : "Échec de l'envoi de la photo",
+        "error",
+      );
     } finally {
       setBusy(false);
     }
@@ -71,7 +82,7 @@ export function QuickAddBar({ onAdd }: Props) {
 
       <button
         type="button"
-        aria-label="Prendre le flacon en photo"
+        aria-label="Ajouter une photo (galerie ou appareil)"
         onClick={() => fileRef.current?.click()}
         disabled={busy}
         className="w-12 border-2 border-on-background flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
@@ -93,11 +104,11 @@ export function QuickAddBar({ onAdd }: Props) {
         )}
       </button>
 
+      {/* Sans `capture` : iOS propose Photothèque OU Appareil photo. */}
       <input
         ref={fileRef}
         type="file"
         accept="image/*"
-        capture="environment"
         className="hidden"
         onChange={(e) => {
           handlePhoto(e.target.files?.[0]);

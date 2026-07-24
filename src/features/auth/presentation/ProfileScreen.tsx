@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { ScreenHero } from "@/shared/ui/ScreenHero";
 import { Icon } from "@/shared/ui/Icon";
 import { createClient } from "@/shared/lib/supabase/client";
@@ -64,10 +65,19 @@ export function ProfileScreen() {
 
   return (
     <div className="flex flex-col gap-6">
-      <ScreenHero
-        label={email || "Profil"}
-        titleLines={[displayName || "Ton nez"]}
-      />
+      <div className="flex items-start justify-between gap-4">
+        <ScreenHero
+          label={email || "Profil"}
+          titleLines={[displayName || "Ton nez"]}
+        />
+        <Link
+          href="/"
+          aria-label="Retour"
+          className="shrink-0 w-9 h-9 border-2 border-on-background flex items-center justify-center active:scale-95 transition-transform"
+        >
+          <Icon name="arrow_back" size={17} />
+        </Link>
+      </div>
 
       {applications.length > 0 && (
         <section className="flex flex-col gap-3">

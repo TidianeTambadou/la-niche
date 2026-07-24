@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { clsx } from "clsx";
 import { ScreenHero } from "@/shared/ui/ScreenHero";
 import { SectionLabel } from "@/shared/ui/brutalist/SectionLabel";
+import { toast } from "@/shared/ui/Toaster";
 import type {
   NewWishlistItem,
   WishlistItem,
@@ -68,6 +69,7 @@ export function WishlistScreen() {
         ),
       );
       updateWishlistItem(item.id, { status: next }).catch(() => {
+        toast("Statut non enregistré", "error");
         setItems((prev) =>
           (prev ?? []).map((i) =>
             i.id === item.id ? { ...i, status: item.status } : i,

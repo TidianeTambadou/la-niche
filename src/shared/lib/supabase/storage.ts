@@ -1,10 +1,12 @@
 import { createClient } from "@/shared/lib/supabase/client";
+import { compressImage, safeUUID } from "@/shared/lib/image";
 
 const BUCKET = "photos";
 
 /**
  * Upload d'une photo de flacon dans le bucket privé `photos`.
- * Convention : {userId}/{uuid}.{ext} — imposée par les policies RLS.
+ * La photo est recompressée en JPEG (HEIC iPhone inclus) avant envoi.
+ * Convention : {userId}/{uuid}.jpg — imposée par les policies RLS.
  * Retourne le chemin à stocker en base.
  */
 export async function uploadPhoto(file: File): Promise<string> {
@@ -14,11 +16,11 @@ export async function uploadPhoto(file: File): Promise<string> {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Non connecté.");
 
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
+  const blob = await compressImage(file);
+  const path = `${user.id}/${safeUUID()}.jpg`;
 
-  const { error } = await supabase.storage.from(BUCKET).upload(path, file, {
-    contentType: file.type || "image/jpeg",
+  const { error } = await supabase.storage.from(BUCKET).upload(path, blob, {
+    contentType: "image/jpeg",
     upsert: false,
   });
   if (error) throw new Error(`Upload impossible : ${error.message}`);

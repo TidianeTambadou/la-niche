@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { SectionLabel } from "@/shared/ui/brutalist/SectionLabel";
 import { Icon } from "@/shared/ui/Icon";
@@ -16,10 +17,12 @@ import {
 } from "@/features/mannequin/domain/body-zones";
 import type { Walk } from "@/features/walk/domain/walk";
 import {
+  deleteWalk,
   getWalk,
   listApplications,
   type ApplicationWithInsights,
 } from "@/features/walk/infrastructure/walk-repository";
+import { toast } from "@/shared/ui/Toaster";
 import { ZoneStackSheet } from "./ZoneStackSheet";
 
 function initials(name: string): string {
@@ -60,6 +63,9 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
   const [openZone, setOpenZone] = useState<BodyZone | null>(null);
   /** Pose sélectionnée dans la timeline → la caméra dolly dessus. */
   const [focused, setFocused] = useState<ApplicationWithInsights | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     Promise.all([getWalk(walkId), listApplications(walkId)]).then(
@@ -135,14 +141,75 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
             {total} pose{total > 1 ? "s" : ""}
           </p>
         </div>
-        <Link
-          href="/journal"
-          aria-label="Retour au journal"
-          className="shrink-0 w-9 h-9 border-2 border-on-background flex items-center justify-center active:scale-95 transition-transform"
-        >
-          <Icon name="arrow_back" size={17} />
-        </Link>
+        <div className="shrink-0 flex items-center gap-2">
+          <button
+            type="button"
+            aria-label="Supprimer la balade"
+            onClick={() => setConfirmDelete(true)}
+            className="w-9 h-9 border-2 border-on-background/40 hover:border-on-background flex items-center justify-center active:scale-95 transition-all"
+          >
+            <Icon name="delete" size={16} />
+          </button>
+          <Link
+            href="/journal"
+            aria-label="Retour au journal"
+            className="w-9 h-9 border-2 border-on-background flex items-center justify-center active:scale-95 transition-transform"
+          >
+            <Icon name="arrow_back" size={17} />
+          </Link>
+        </div>
       </header>
+
+      {/* Confirmation de suppression — action destructive, jamais en un tap. */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center px-8">
+          <button
+            type="button"
+            aria-label="Annuler"
+            onClick={() => setConfirmDelete(false)}
+            className="backdrop-fade-in absolute inset-0 bg-on-background/50 cursor-default"
+          />
+          <div className="bubble-in relative bg-background border-2 border-on-background p-6 max-w-xs w-full flex flex-col gap-4">
+            <p className="font-sans font-bold text-base tracking-tight">
+              Supprimer cette balade ?
+            </p>
+            <p className="text-sm opacity-70">
+              Les {total} pose{total > 1 ? "s" : ""}, photos et impressions
+              seront définitivement effacées.
+            </p>
+            <div className="flex gap-2.5 mt-1">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={async () => {
+                  setDeleting(true);
+                  try {
+                    await deleteWalk(walk.id);
+                    toast("Balade supprimée", "success");
+                    router.replace("/journal");
+                  } catch (e) {
+                    toast(
+                      e instanceof Error ? e.message : "Échec de la suppression",
+                      "error",
+                    );
+                    setDeleting(false);
+                  }
+                }}
+                className="press-cta flex-1 font-sans font-semibold text-xs tracking-widest uppercase bg-on-background text-background border-2 border-on-background px-4 py-3 shadow-[3px_3px_0px_0px_currentColor] disabled:opacity-50"
+              >
+                {deleting ? "…" : "Supprimer"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="flex-1 font-sans font-semibold text-xs tracking-widest uppercase border-2 border-on-background px-4 py-3 hover:bg-on-background hover:text-background transition-colors"
+              >
+                Garder
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="relative">
         <LazyBodySilhouette3D
