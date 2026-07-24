@@ -1,0 +1,703 @@
+@import "tailwindcss";
+
+/*
+  Design system: "Clinical Atelier" — porté depuis Gallery La Niche v2.
+  - Monochromatic: pure white background, absolute black primary
+  - Sharp corners on layout, full rounding on buttons/chips
+  - Glassmorphism for floating nav (white at 70% + 20px blur)
+  - Inter for everything; JetBrains Mono for technical data;
+    Cormorant Garamond italic for luxury accents (sparingly)
+*/
+
+:root {
+  --background: #ffffff;
+  --surface: #f9f9f9;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f3f3f4;
+  --surface-container: #eeeeee;
+  --surface-container-high: #e8e8e8;
+  --surface-container-highest: #e2e2e2;
+
+  --on-background: #1a1c1c;
+  --on-surface: #1a1c1c;
+  --on-surface-variant: #474747;
+
+  --primary: #000000;
+  --on-primary: #e2e2e2;
+  --secondary: #5e5e5e;
+  --tertiary: #3a3c3c;
+
+  --outline: #000000;
+  --outline-variant: #000000;
+
+  /* Errors monochromes : high-contrast block au lieu de rouge */
+  --error: #000000;
+  --error-container: #f3f3f4;
+  --on-error: #ffffff;
+
+  /* Compatibility tokens */
+  --foreground: var(--on-background);
+  --primary-foreground: var(--on-primary);
+  --muted: var(--surface-container-low);
+  --muted-foreground: var(--on-surface-variant);
+  --accent: var(--surface-container-low);
+  --border: var(--outline-variant);
+}
+
+.dark {
+  --background: #0a0a0a;
+  --surface: #121212;
+  --surface-container-lowest: #0f0f0f;
+  --surface-container-low: #161616;
+  --surface-container: #1c1c1c;
+  --surface-container-high: #232323;
+  --surface-container-highest: #2a2a2a;
+
+  --on-background: #fafafa;
+  --on-surface: #fafafa;
+  --on-surface-variant: #a1a1aa;
+
+  --primary: #fafafa;
+  --on-primary: #0a0a0a;
+  --secondary: #c6c6c6;
+  --tertiary: #c0c2c2;
+
+  --outline: #fafafa;
+  --outline-variant: #fafafa;
+
+  --error: #fafafa;
+  --error-container: #1c1c1c;
+  --on-error: #0a0a0a;
+
+  --foreground: var(--on-background);
+  --primary-foreground: var(--on-primary);
+  --muted: var(--surface-container-low);
+  --muted-foreground: var(--on-surface-variant);
+  --accent: var(--surface-container-low);
+  --border: var(--outline-variant);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+
+  --color-on-background: var(--on-background);
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-variant: var(--on-surface-variant);
+
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-secondary: var(--secondary);
+  --color-tertiary: var(--tertiary);
+
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+
+  --color-error: var(--error);
+  --color-error-container: var(--error-container);
+  --color-on-error: var(--on-error);
+
+  --color-foreground: var(--foreground);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-cormorant: var(--font-cormorant);
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--on-background);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  letter-spacing: -0.01em;
+  line-height: 1.55;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+/*
+ * Global transitions polish — uniformise sur 220ms avec easing doux.
+ * Les utilities Tailwind continuent de fonctionner ; ce sélecteur global
+ * ne fait qu'augmenter la durée par défaut.
+ */
+button,
+a,
+input,
+textarea,
+select,
+summary,
+[role="button"] {
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.transition-all,
+.transition-colors,
+.transition-shadow,
+.transition-transform,
+.transition-opacity {
+  transition-duration: 220ms;
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@supports (-webkit-touch-callout: none) {
+  body {
+    min-height: -webkit-fill-available;
+  }
+}
+
+button,
+a {
+  touch-action: manipulation;
+}
+
+/* Material Symbols configuration: thin clinical weight */
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 24;
+  font-feature-settings: "liga";
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.material-symbols-outlined.filled {
+  font-variation-settings: "FILL" 1, "wght" 300, "GRAD" 0, "opsz" 24;
+}
+
+/* Hide scrollbars on horizontal scrollers */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Fixed bottom-nav safe area helper (iOS notch / home indicator) */
+.safe-bottom {
+  padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+}
+.safe-top {
+  padding-top: max(1rem, env(safe-area-inset-top));
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   Shimmer skeleton — clinical loading state.
+   ───────────────────────────────────────────────────────────────────── */
+
+@keyframes shimmer-sweep {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.shimmer-bar {
+  background: linear-gradient(
+    90deg,
+    var(--surface-container-low) 0%,
+    var(--surface-container-high) 35%,
+    var(--surface-container-highest) 50%,
+    var(--surface-container-high) 65%,
+    var(--surface-container-low) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-sweep 1.8s ease-in-out infinite;
+}
+
+@keyframes caption-rise {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.caption-rise {
+  animation: caption-rise 380ms ease-out;
+}
+
+/* Halo pulsant — signale un élément actif (chrono de balade, live). */
+@keyframes ring-pulse {
+  0%   { box-shadow: 0 0 0 0   var(--on-background); opacity: 0.55; }
+  70%  { box-shadow: 0 0 0 6px var(--on-background); opacity: 0; }
+  100% { box-shadow: 0 0 0 6px var(--on-background); opacity: 0; }
+}
+
+.ring-pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  animation: ring-pulse 1.6s ease-out infinite;
+}
+
+/* Slide-in générique (triggered by React key remount) */
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.bubble-in {
+  animation: bubble-in 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ─── Fin de balade — cascade cinématique ─────────────────────────────
+   Chaque élément apparaît en séquence : brand, checkmark qui se trace,
+   titre monumental, CTA. Delays échelonnés (~1.4s total). */
+
+@keyframes done-rise-in {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes done-scale-in {
+  0%   { opacity: 0; transform: scale(0.6); }
+  60%  { opacity: 1; transform: scale(1.06); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes done-underline-draw {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes done-check-draw {
+  from { stroke-dashoffset: 40; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.done-screen > * {
+  opacity: 0;
+  animation: done-rise-in 520ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.done-brand      { animation-delay: 60ms;  }
+.done-check      { animation: done-scale-in 620ms cubic-bezier(0.34, 1.56, 0.64, 1) 220ms both; }
+.done-check-path {
+  stroke-dasharray: 40;
+  stroke-dashoffset: 40;
+  animation: done-check-draw 620ms cubic-bezier(0.65, 0, 0.35, 1) 480ms forwards;
+}
+.done-title      { animation-delay: 480ms; }
+.done-underline  {
+  transform: scaleX(0);
+  transform-origin: center;
+  animation: done-underline-draw 480ms cubic-bezier(0.22, 1, 0.36, 1) 900ms forwards;
+}
+.done-headline   { animation-delay: 720ms; }
+.done-cta        { animation-delay: 960ms; }
+.done-thanks     { animation-delay: 1200ms; }
+
+/* ─── Reveals génériques ─────────────────────────────────────────────── */
+
+@keyframes reveal-fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.reveal-fade-in { animation: reveal-fade-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Springy 3D pop (cartes) */
+@keyframes reveal-pop {
+  0%   { opacity: 0; transform: translateY(28px) scale(0.85) rotate(-3deg); }
+  55%  { opacity: 1; transform: translateY(-6px) scale(1.04) rotate(0.8deg); }
+  78%  { opacity: 1; transform: translateY(2px) scale(0.99) rotate(-0.4deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+}
+.reveal-pop { animation: reveal-pop 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Sections en cascade (sheets, fiches parfum) */
+@keyframes card-section-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.card-section { animation: card-section-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.stagger-sheet .card-section:nth-child(1) { animation-delay: 80ms; }
+.stagger-sheet .card-section:nth-child(2) { animation-delay: 160ms; }
+.stagger-sheet .card-section:nth-child(3) { animation-delay: 240ms; }
+.stagger-sheet .card-section:nth-child(4) { animation-delay: 320ms; }
+.stagger-sheet .card-section:nth-child(5) { animation-delay: 400ms; }
+.stagger-sheet .card-section:nth-child(6) { animation-delay: 480ms; }
+.stagger-sheet .card-section:nth-child(7) { animation-delay: 560ms; }
+
+/* Backdrop du sheet */
+@keyframes backdrop-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.backdrop-fade-in {
+  animation: backdrop-fade-in 0.3s ease-out forwards;
+}
+
+/* ─── Célébration (fin/archivage de balade) ──────────────────────────── */
+@keyframes celebration-rise {
+  from { opacity: 0; transform: translateY(20px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes celebration-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+.celebration-in {
+  animation: celebration-rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.celebration-out {
+  animation: celebration-fade-out 0.4s ease-in forwards;
+}
+
+/* ─── Feedback tactile ───────────────────────────────────────────────── */
+
+/* Petit "pop" élastique quand on tape un choix. Court (200ms). */
+@keyframes tap-bump {
+  0%   { transform: translate(-2px, -2px) scale(1); }
+  35%  { transform: translate(-3px, -3px) scale(1.015); }
+  100% { transform: translate(-2px, -2px) scale(1); }
+}
+.tap-bump { animation: tap-bump 200ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* Checkmark qui pop dans une case cochée. */
+@keyframes select-pop {
+  0%   { opacity: 0; transform: scale(0.4) rotate(-12deg); }
+  60%  { opacity: 1; transform: scale(1.15) rotate(3deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+.select-pop { animation: select-pop 280ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* CTA press — feedback tactile net et court (cartes brutalist). */
+.press-cta {
+  transition: transform 110ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 110ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.press-cta:active {
+  transform: translate(3px, 3px);
+  box-shadow: none !important;
+}
+
+/* ─── Navigation ─────────────────────────────────────────────────────── */
+
+/* Page enter — chaque nouvelle route fade up légèrement. AppShell ajoute
+ * cette classe au <main> avec une key liée au pathname. */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter { animation: page-enter 280ms cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* Step swap — chaque étape d'un flow fade+slide in.
+ * PAS DE filter: blur (coûteux GPU sur mobile). Court (220ms). */
+@keyframes wizard-step-in {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.wizard-step-in {
+  animation: wizard-step-in 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+
+/* ─── Indicateurs ────────────────────────────────────────────────────── */
+
+/* Point qui pulse (chrono actif, session en cours). */
+@keyframes live-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.85); }
+  50%      { opacity: 1; transform: scale(1); }
+}
+.live-pulse { animation: live-pulse 1.6s ease-in-out infinite; }
+
+/* Bouton refresh : spin pendant le fetch. */
+@keyframes refresh-spin {
+  to { transform: rotate(360deg); }
+}
+.refresh-spinning { animation: refresh-spin 700ms linear infinite; }
+
+/* Idle-state breathing (élément actif au repos). */
+@keyframes daily-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+.daily-float { animation: daily-float 4.2s ease-in-out infinite; }
+
+/* Dot indicator transitions. */
+@keyframes dot-grow {
+  from { transform: scaleX(0.4); opacity: 0.5; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
+.dot-grow { animation: dot-grow 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; transform-origin: left; }
+
+/* ─── Touches parfumerie ─────────────────────────────────────────────── */
+
+/* Numéro de chapitre en filigrane derrière un titre. */
+.question-watermark {
+  font-size: clamp(4.5rem, 14vw, 9rem);
+  opacity: 0.08;
+  letter-spacing: -0.04em;
+}
+
+/* Filet qui se trace. */
+.rule-trace {
+  animation: rule-trace 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: left;
+}
+@keyframes rule-trace {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+/* Sillage diagonal qui shimmer une fois — référence au sillage du parfum. */
+.sillage-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  animation: perfume-shimmer 900ms cubic-bezier(0.22, 1, 0.36, 1) 80ms forwards;
+  pointer-events: none;
+}
+@keyframes perfume-shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+/* ─── Layout ─────────────────────────────────────────────────────────── */
+
+.app-shell-main {
+  max-width: 28rem;
+}
+@media (min-width: 768px) {
+  .app-shell-main {
+    max-width: 52rem;
+  }
+}
+
+.app-shell-main h1,
+.app-shell-main h2,
+.app-shell-main h3 {
+  letter-spacing: -0.02em;
+}
+
+.app-shell-main p {
+  line-height: 1.6;
+}
+
+/* ─── Hero cascade — entrée cinématique des écrans ──────────────────
+ * Filet vertical qui se trace, label qui se resserre, lignes du titre
+ * qui montent en séquence, citation qui suit. Portée de la v2. */
+@keyframes hero-stripe-grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+@keyframes hero-label-fade {
+  from { opacity: 0; letter-spacing: 0.6em; }
+  to   { opacity: 0.55; letter-spacing: 0.35em; }
+}
+@keyframes hero-line-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes hero-quote-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 0.6; transform: translateY(0); }
+}
+.hero-stripe {
+  transform-origin: top;
+  animation: hero-stripe-grow 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.hero-label {
+  animation: hero-label-fade 800ms cubic-bezier(0.22, 1, 0.36, 1) 150ms both;
+}
+.hero-line-1 {
+  animation: hero-line-rise 750ms cubic-bezier(0.16, 1, 0.3, 1) 250ms both;
+}
+.hero-line-2 {
+  animation: hero-line-rise 750ms cubic-bezier(0.16, 1, 0.3, 1) 400ms both;
+}
+.hero-quote {
+  animation: hero-quote-fade 800ms cubic-bezier(0.22, 1, 0.36, 1) 650ms both;
+}
+.hero-body {
+  animation: hero-line-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) 550ms both;
+}
+
+/* Sheet : montée avec léger overshoot physique. */
+@keyframes sheet-slide-up-spring {
+  0%   { opacity: 0; transform: translateY(100%); }
+  70%  { opacity: 1; transform: translateY(-8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.sheet-slide-up {
+  animation: sheet-slide-up-spring 0.52s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* ─── Odomètre (chrono, compteurs) ───────────────────────────────────
+ * Chaque digit est une colonne 0-9 translatée verticalement. La
+ * transition roule le chiffre comme un compteur mécanique. */
+.ticker-column {
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+.ticker-strip {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* ─── Stamp (swipe wishlist) — tampon encreur qui claque ───────────── */
+@keyframes stamp-in {
+  0%   { opacity: 0; transform: scale(1.6) rotate(-14deg); }
+  55%  { opacity: 1; transform: scale(0.94) rotate(-8deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-8deg); }
+}
+.stamp-in {
+  animation: stamp-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Ink ripple — goutte d'encre au confirm d'une pose ────────────── */
+@keyframes ink-ripple {
+  0%   { transform: scale(0.2); opacity: 0.5; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+.ink-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid currentColor;
+  animation: ink-ripple 700ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  pointer-events: none;
+}
+
+/* ─── Scrub replay (journal) — range input clinique ────────────────── */
+.scrub-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 32px;
+  background: transparent;
+  cursor: pointer;
+}
+.scrub-range::-webkit-slider-runnable-track {
+  height: 2px;
+  background: var(--on-background);
+}
+.scrub-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -10px;
+  background: var(--background);
+  border: 2px solid var(--on-background);
+  box-shadow: 3px 3px 0 0 var(--on-background);
+  transition: transform 150ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.scrub-range:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+  box-shadow: 1px 1px 0 0 var(--on-background);
+}
+.scrub-range::-moz-range-track {
+  height: 2px;
+  background: var(--on-background);
+}
+.scrub-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 0;
+  background: var(--background);
+  border: 2px solid var(--on-background);
+  box-shadow: 3px 3px 0 0 var(--on-background);
+}
+
+/* ─── Card stack (layering) — pile physique de cartes ──────────────── */
+.stack-card {
+  transition:
+    transform 380ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 380ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* ─── Ghost photo (vol vers le marqueur) ───────────────────────────── */
+.photo-ghost {
+  position: fixed;
+  z-index: 80;
+  pointer-events: none;
+  object-fit: cover;
+  border: 2px solid var(--on-background);
+}
+
+/* ─── Line-draw (empty states) — flacon qui se dessine ─────────────── */
+.line-draw path,
+.line-draw rect,
+.line-draw line,
+.line-draw circle {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  animation: line-draw 1.4s cubic-bezier(0.22, 1, 0.36, 1) 200ms forwards;
+}
+@keyframes line-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* ─── Reduced motion ─────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .shimmer-bar,
+  .caption-rise,
+  .ring-pulse::after,
+  .bubble-in,
+  .done-screen > *,
+  .done-check-path,
+  .done-underline,
+  .reveal-fade-in,
+  .reveal-pop,
+  .card-section,
+  .sheet-slide-up,
+  .backdrop-fade-in,
+  .celebration-in,
+  .celebration-out {
+    animation: none;
+    opacity: 1;
+    clip-path: none;
+  }
+  .shimmer-bar {
+    background: var(--surface-container-low);
+  }
+  .tap-bump,
+  .select-pop,
+  .page-enter,
+  .wizard-step-in,
+  .press-cta,
+  .live-pulse,
+  .refresh-spinning,
+  .daily-float,
+  .dot-grow,
+  .rule-trace,
+  .sillage-shimmer::after,
+  .ticker-strip,
+  .stamp-in,
+  .ink-ripple,
+  .stack-card,
+  .photo-ghost,
+  .line-draw path,
+  .line-draw rect,
+  .line-draw line,
+  .line-draw circle {
+    animation: none !important;
+    transition: none !important;
+  }
+  .line-draw path,
+  .line-draw rect,
+  .line-draw line,
+  .line-draw circle {
+    stroke-dashoffset: 0;
+  }
+}
