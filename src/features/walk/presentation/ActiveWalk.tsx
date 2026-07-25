@@ -23,8 +23,15 @@ import {
 } from "@/features/walk/infrastructure/walk-repository";
 import { toast } from "@/shared/ui/Toaster";
 import { Icon } from "@/shared/ui/Icon";
+import { BottomSheet } from "@/shared/ui/BottomSheet";
 import { haptic } from "@/shared/lib/haptics";
+import {
+  assignSessionColors,
+  colorFor,
+} from "@/features/mannequin/domain/palette";
+import { MannequinSettingsPanel } from "@/features/mannequin/presentation/MannequinSettingsPanel";
 import { WalkChrono } from "./WalkChrono";
+import { SessionLegend, type LegendEntry } from "./SessionLegend";
 import {
   PlacementSheet,
   type PlacementDraft,
@@ -80,9 +87,20 @@ export function ActiveWalk({
   const [highlighted, setHighlighted] = useState<BodyZone | null>(null);
   const [ended, setEnded] = useState(false);
   const [endBusy, setEndBusy] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  /** Focus caméra contrôlé (tap corps OU tap légende). */
+  const [focus, setFocus] = useState<[number, number, number] | null>(null);
+  /** Parfum mis en avant depuis la légende. */
+  const [legendActive, setLegendActive] = useState<string | null>(null);
   const mannequinRef = useRef<HTMLDivElement>(null);
 
-  // ─── Marqueurs : un par zone, ×N si layering ─────────────────────────
+  /** Couleurs de session : 1 parfum = 1 teinte, ordre d'apparition. */
+  const sessionColors = useMemo(
+    () => assignSessionColors(applications.map((a) => a.perfumeName)),
+    [applications],
+  );
+
+  // ─── Marqueurs : un par zone, couleur du parfum, anneaux si layering ──
   const markers = useMemo<PlacedMarker[]>(() => {
     const byZone = new Map<BodyZone, ApplicationWithInsights[]>();
     for (const app of applications) {
@@ -97,18 +115,64 @@ export function ActiveWalk({
         zone,
         label: apps.length > 1 ? `×${apps.length}` : initials(last.perfumeName),
         position: last.position ?? undefined,
+        color: colorFor(sessionColors, last.perfumeName),
+        stack: apps.map((a) => colorFor(sessionColors, a.perfumeName)),
         dimmed: draft !== null && draft.zone !== zone,
       };
     });
-  }, [applications, draft]);
+  }, [applications, draft, sessionColors]);
 
+  /** Zones utilisées, avec la couleur du dernier parfum posé. */
   const zonesUsed = useMemo(() => {
-    const seen = new Map<BodyZone, number>();
+    const seen = new Map<BodyZone, { count: number; color: string }>();
     for (const app of applications) {
-      seen.set(app.bodyZone, (seen.get(app.bodyZone) ?? 0) + 1);
+      seen.set(app.bodyZone, {
+        count: (seen.get(app.bodyZone)?.count ?? 0) + 1,
+        color: colorFor(sessionColors, app.perfumeName),
+      });
     }
     return Array.from(seen.entries());
-  }, [applications]);
+  }, [applications, sessionColors]);
+
+  /** Légende : parfum → couleur → nombre de poses. */
+  const legend = useMemo<LegendEntry[]>(() => {
+    const entries = new Map<string, LegendEntry>();
+    for (const app of applications) {
+      const existing = entries.get(app.perfumeName);
+      if (existing) {
+        existing.poseCount += 1;
+      } else {
+        entries.set(app.perfumeName, {
+          perfumeName: app.perfumeName,
+          color: colorFor(sessionColors, app.perfumeName),
+          poseCount: 1,
+        });
+      }
+    }
+    return Array.from(entries.values());
+  }, [applications, sessionColors]);
+
+  const handleLegendSelect = useCallback(
+    (entry: LegendEntry) => {
+      // Focus la dernière pose de ce parfum, en pulsant sa zone.
+      const poses = applications.filter(
+        (a) => a.perfumeName === entry.perfumeName,
+      );
+      const last = poses[poses.length - 1];
+      if (!last) return;
+      setLegendActive((prev) =>
+        prev === entry.perfumeName ? null : entry.perfumeName,
+      );
+      if (legendActive === entry.perfumeName) {
+        setFocus(null);
+        setHighlighted(null);
+      } else {
+        setFocus(last.position ?? null);
+        setHighlighted(last.bodyZone);
+      }
+    },
+    [applications, legendActive],
+  );
 
   // ─── Vol de la photo vers le marqueur (FLIP, Web Animations API) ────
   const flyPhotoToBody = useCallback((from: DOMRect, url: string) => {
@@ -146,6 +210,8 @@ export function ActiveWalk({
   // ─── Pose ────────────────────────────────────────────────────────────
   const handleBodyClick = useCallback((zone: BodyZone, position: [number, number, number]) => {
     haptic("medium");
+    setLegendActive(null);
+    setFocus(position);
     setDraft({ zone, position });
   }, []);
 
@@ -264,14 +330,24 @@ export function ActiveWalk({
       {/* ─── Bandeau session ─── */}
       <div className="flex items-center justify-between px-5">
         <WalkChrono startedAt={walk.startedAt} />
-        <button
-          type="button"
-          onClick={handleEnd}
-          disabled={endBusy}
-          className="rounded-full border-2 border-on-background px-4 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest active:scale-95 transition-all hover:bg-on-background hover:text-background disabled:opacity-50"
-        >
-          Terminer
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label="Réglages du mannequin"
+            onClick={() => setSettingsOpen(true)}
+            className="w-8 h-8 rounded-full border-2 border-on-background/40 hover:border-on-background flex items-center justify-center active:scale-95 transition-all"
+          >
+            <Icon name="tune" size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={handleEnd}
+            disabled={endBusy}
+            className="rounded-full border-2 border-on-background px-4 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest active:scale-95 transition-all hover:bg-on-background hover:text-background disabled:opacity-50"
+          >
+            Terminer
+          </button>
+        </div>
       </div>
 
       {/* ─── Rail wishlist ─── */}
@@ -307,30 +383,57 @@ export function ActiveWalk({
       </p>
 
       {/* ─── Mannequin ─── */}
-      <div ref={mannequinRef}>
+      <div ref={mannequinRef} className="relative">
         <LazyBodySilhouette3D
           placementMode
           filledMarkers={markers}
           highlightedZone={highlighted ?? draft?.zone ?? null}
           onBodyClick={handleBodyClick}
           poseCount={applications.length}
+          focusPoint={focus}
         />
+        {focus && (
+          <button
+            type="button"
+            onClick={() => {
+              setFocus(null);
+              setLegendActive(null);
+              setHighlighted(null);
+            }}
+            className="bubble-in absolute top-2 right-2 px-3 py-1.5 bg-background/95 backdrop-blur border border-outline-variant text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5 active:scale-95 transition-transform z-10"
+          >
+            <Icon name="zoom_out" size={12} />
+            Vue d&apos;ensemble
+          </button>
+        )}
       </div>
+
+      {/* ─── Schéma de session (légende parfum ↔ couleur) ─── */}
+      <SessionLegend
+        entries={legend}
+        activePerfume={legendActive}
+        onSelect={handleLegendSelect}
+      />
 
       {/* ─── Zones utilisées (accès layering) ─── */}
       {zonesUsed.length > 0 && (
         <div className="flex gap-2 overflow-x-auto hide-scrollbar px-5">
-          {zonesUsed.map(([zone, count]) => (
+          {zonesUsed.map(([zone, info]) => (
             <button
               key={zone}
               type="button"
               onClick={() => setOpenZone(zone)}
               className="shrink-0 border-2 border-on-background px-3.5 py-2 font-mono text-[10px] font-bold uppercase tracking-widest active:scale-95 transition-transform inline-flex items-center gap-2 bg-background"
             >
+              <span
+                aria-hidden
+                className="w-2.5 h-2.5 rounded-full shrink-0"
+                style={{ backgroundColor: info.color }}
+              />
               {BODY_ZONE_LABELS[zone]}
-              {count > 1 && (
+              {info.count > 1 && (
                 <span className="bg-on-background text-background px-1.5 py-0.5 text-[9px]">
-                  ×{count}
+                  ×{info.count}
                 </span>
               )}
             </button>
@@ -343,13 +446,27 @@ export function ActiveWalk({
         draft={draft}
         wishlist={wishlist}
         preselected={preselected}
+        sessionColors={sessionColors}
         onClose={() => setDraft(null)}
         onConfirm={handleConfirm}
       />
 
+      {/* ─── Réglages fluidité (engrenage) ─── */}
+      {settingsOpen && (
+        <BottomSheet
+          open
+          onClose={() => setSettingsOpen(false)}
+          label="Fluidité"
+          title="Réglages du mannequin"
+        >
+          <MannequinSettingsPanel />
+        </BottomSheet>
+      )}
+
       <ZoneStackSheet
         zone={openZone}
         applications={openZoneApps}
+        sessionColors={sessionColors}
         onClose={() => setOpenZone(null)}
         onSetVerdict={handleSetVerdict}
         onAddImpression={handleAddImpression}

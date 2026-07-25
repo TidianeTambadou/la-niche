@@ -7,6 +7,7 @@ import { Icon } from "@/shared/ui/Icon";
 import { PhotoThumb } from "@/shared/ui/PhotoThumb";
 import { SmartNoteField } from "@/shared/ui/SmartNoteField";
 import { DRYDOWN_CHIPS } from "@/shared/lib/olfactory-lexicon";
+import { colorFor } from "@/features/mannequin/domain/palette";
 import {
   BODY_ZONE_LABELS,
   type BodyZone,
@@ -44,6 +45,8 @@ function sinceApplied(appliedAt: string, at: string): string {
 type Props = {
   zone: BodyZone | null;
   applications: ApplicationWithInsights[];
+  /** Couleurs de session (palette olfactive) — liserés des cartes. */
+  sessionColors?: Map<string, string>;
   readOnly?: boolean;
   onClose: () => void;
   onSetVerdict?: (id: string, verdict: Verdict | null) => void;
@@ -59,6 +62,7 @@ type Props = {
 export function ZoneStackSheet({
   zone,
   applications,
+  sessionColors,
   readOnly = false,
   onClose,
   onSetVerdict,
@@ -120,6 +124,9 @@ export function ZoneStackSheet({
         {stack.map((app, i) => {
           const offset = i - index;
           const behind = offset > 0 ? Math.min(offset, 3) : 0;
+          const accent = sessionColors
+            ? colorFor(sessionColors, app.perfumeName)
+            : null;
           return (
             <button
               key={app.id}
@@ -144,6 +151,7 @@ export function ZoneStackSheet({
                 opacity: offset < 0 ? 0 : 1 - behind * 0.12,
                 pointerEvents: offset < 0 ? "none" : "auto",
                 zIndex: 30 - Math.abs(offset),
+                ...(accent ? { borderLeft: `5px solid ${accent}` } : {}),
               }}
             >
               <PhotoThumb

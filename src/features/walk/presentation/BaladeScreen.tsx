@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { ScreenHero } from "@/shared/ui/ScreenHero";
-import { LazyBodySilhouette3D } from "@/features/mannequin/presentation/LazyBodySilhouette3D";
+import { HomeSillage } from "./HomeSillage";
 import type { Walk } from "@/features/walk/domain/walk";
 import type { WishlistItem } from "@/features/wishlist/domain/wishlist-item";
 import {
@@ -56,6 +56,16 @@ export function BaladeScreen() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // Préchargement discret du module 3D + du GLB pendant que l'utilisateur
+  // contemple la home : le mannequin apparaît instantanément au démarrage
+  // de la balade, sans avoir coûté un octet au premier paint.
+  useEffect(() => {
+    const id = setTimeout(() => {
+      import("@/features/mannequin/presentation/BodySilhouette3D");
+    }, 2000);
+    return () => clearTimeout(id);
+  }, []);
 
   const handleStart = useCallback(async () => {
     if (starting) return;
@@ -114,9 +124,7 @@ export function BaladeScreen() {
         quote="« Entre en parfumerie, ouvre une session, et laisse ta peau se souvenir pour toi. »"
       />
 
-      <div className="daily-float">
-        <LazyBodySilhouette3D readOnly />
-      </div>
+      <HomeSillage />
 
       <button
         type="button"

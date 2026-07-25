@@ -3,13 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ScreenHero } from "@/shared/ui/ScreenHero";
+import { SectionLabel } from "@/shared/ui/brutalist/SectionLabel";
 import { Icon } from "@/shared/ui/Icon";
 import { createClient } from "@/shared/lib/supabase/client";
 import { signOut } from "@/features/auth/application/actions";
-import {
-  LazyBodySilhouette3D,
-  type PlacedMarker,
-} from "@/features/mannequin/presentation/LazyBodySilhouette3D";
+import { MannequinSettingsPanel } from "@/features/mannequin/presentation/MannequinSettingsPanel";
 import {
   BODY_ZONE_LABELS,
   type BodyZone,
@@ -20,8 +18,8 @@ import {
 } from "@/features/walk/infrastructure/walk-repository";
 
 /**
- * Profil : identité, cartographie de la peau (heatmap des zones —
- * toutes balades confondues) et déconnexion.
+ * Profil : identité, réglages de fluidité du mannequin, zones de
+ * prédilection (texte) et déconnexion. Aucun canvas 3D ici — léger.
  */
 export function ProfileScreen() {
   const [email, setEmail] = useState<string>("");
@@ -39,22 +37,6 @@ export function ProfileScreen() {
     listAllApplications().then(setApplications).catch(() => {});
   }, []);
 
-  /** Heatmap : un marqueur par zone, ×N — la densité de ta pratique. */
-  const heatmap = useMemo<PlacedMarker[]>(() => {
-    const byZone = new Map<BodyZone, ApplicationWithInsights[]>();
-    for (const app of applications) {
-      const list = byZone.get(app.bodyZone) ?? [];
-      list.push(app);
-      byZone.set(app.bodyZone, list);
-    }
-    return Array.from(byZone.entries()).map(([zone, apps]) => ({
-      fragranceId: zone,
-      zone,
-      label: `×${apps.length}`,
-      position: apps[apps.length - 1]!.position ?? undefined,
-    }));
-  }, [applications]);
-
   const topZones = useMemo(() => {
     const counts = new Map<BodyZone, number>();
     for (const a of applications) {
@@ -64,7 +46,7 @@ export function ProfileScreen() {
   }, [applications]);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-7">
       <div className="flex items-start justify-between gap-4">
         <ScreenHero
           label={email || "Profil"}
@@ -79,31 +61,31 @@ export function ProfileScreen() {
         </Link>
       </div>
 
-      {applications.length > 0 && (
+      {/* ─── Fluidité du mannequin ─── */}
+      <section className="flex flex-col gap-4 border-2 border-on-background p-5">
+        <SectionLabel>Fluidité du mannequin</SectionLabel>
+        <MannequinSettingsPanel />
+      </section>
+
+      {/* ─── Zones de prédilection ─── */}
+      {topZones.length > 0 && (
         <section className="flex flex-col gap-3">
-          <div className="flex items-baseline justify-between">
-            <h2 className="font-mono text-xs uppercase tracking-widest opacity-60">
-              Cartographie de ta peau
-            </h2>
-            <span className="font-mono text-[10px] uppercase tracking-widest opacity-40">
-              {applications.length} pose{applications.length > 1 ? "s" : ""}
-            </span>
-          </div>
-          <LazyBodySilhouette3D readOnly filledMarkers={heatmap} />
-          {topZones.length > 0 && (
-            <ol className="flex flex-col gap-1.5">
-              {topZones.map(([zone, count], i) => (
-                <li
-                  key={zone}
-                  className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-widest"
-                >
-                  <span className="opacity-40">0{i + 1}</span>
-                  <span className="flex-1">{BODY_ZONE_LABELS[zone]}</span>
-                  <span className="font-bold">×{count}</span>
-                </li>
-              ))}
-            </ol>
-          )}
+          <SectionLabel>
+            Zones de prédilection — {applications.length} pose
+            {applications.length > 1 ? "s" : ""}
+          </SectionLabel>
+          <ol className="flex flex-col gap-1.5">
+            {topZones.map(([zone, count], i) => (
+              <li
+                key={zone}
+                className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-widest"
+              >
+                <span className="opacity-40">0{i + 1}</span>
+                <span className="flex-1">{BODY_ZONE_LABELS[zone]}</span>
+                <span className="font-bold">×{count}</span>
+              </li>
+            ))}
+          </ol>
         </section>
       )}
 
@@ -118,7 +100,7 @@ export function ProfileScreen() {
       </form>
 
       <p className="text-center font-mono text-[9px] uppercase tracking-widest opacity-30">
-        LA NICHE · V0.1 · CARNET OLFACTIF
+        LA NICHE · V0.2 · CARNET OLFACTIF
       </p>
     </div>
   );

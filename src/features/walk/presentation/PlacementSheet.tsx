@@ -12,6 +12,7 @@ import {
   BODY_ZONE_LABELS,
   type BodyZone,
 } from "@/features/mannequin/domain/body-zones";
+import { upcomingColor } from "@/features/mannequin/domain/palette";
 import type { WishlistItem } from "@/features/wishlist/domain/wishlist-item";
 
 export type PlacementDraft = {
@@ -35,6 +36,8 @@ type Props = {
   wishlist: WishlistItem[];
   /** Parfum pré-sélectionné depuis le rail wishlist. */
   preselected: WishlistItem | null;
+  /** Couleurs déjà attribuées dans la session (palette olfactive). */
+  sessionColors: Map<string, string>;
   onClose: () => void;
   onConfirm: (result: PlacementResult) => Promise<void>;
 };
@@ -49,6 +52,7 @@ export function PlacementSheet({
   draft,
   wishlist,
   preselected,
+  sessionColors,
   onClose,
   onConfirm,
 }: Props) {
@@ -191,7 +195,19 @@ export function PlacementSheet({
       <div className="card-section mt-5">
         {activePerfume ? (
           <div className="flex items-center justify-between border-2 border-on-background px-4 py-3">
-            <div className="min-w-0">
+            <div className="min-w-0 flex items-center gap-2.5">
+              {/* La couleur que ce parfum portera sur le mannequin. */}
+              <span
+                aria-hidden
+                className="w-3.5 h-3.5 rounded-full shrink-0 select-pop"
+                style={{
+                  backgroundColor: upcomingColor(
+                    sessionColors,
+                    activePerfume.name,
+                  ),
+                }}
+              />
+              <div className="min-w-0">
               <p className="font-sans font-bold text-sm truncate">
                 {activePerfume.name}
               </p>
@@ -200,6 +216,7 @@ export function PlacementSheet({
                   {activePerfume.house}
                 </p>
               )}
+              </div>
             </div>
             <button
               type="button"
@@ -224,6 +241,18 @@ export function PlacementSheet({
               placeholder="Recherche wishlist ou saisie libre…"
               className="w-full px-4 py-3 bg-background text-on-background border-2 border-on-background font-mono text-sm rounded-none focus:outline-none focus:shadow-[4px_4px_0px_0px_currentColor] placeholder:opacity-40 transition-shadow"
             />
+            {freeName && suggestions.length === 0 && (
+              <span className="bubble-in inline-flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest opacity-70">
+                Sa couleur sur le corps
+                <span
+                  aria-hidden
+                  className="w-3 h-3 rounded-full"
+                  style={{
+                    backgroundColor: upcomingColor(sessionColors, freeName),
+                  }}
+                />
+              </span>
+            )}
             {suggestions.length > 0 && (
               <ul className="border-2 border-on-background divide-y-2 divide-on-background">
                 {suggestions.map((s) => (

@@ -647,6 +647,38 @@ a {
   to { stroke-dashoffset: 0; }
 }
 
+/* ─── Home sillage — volutes et molécules qui s'élèvent ──────────────── */
+
+@keyframes sillage-drift {
+  0%   { transform: translate3d(0, 12%, 0) scale(0.9); opacity: 0; }
+  25%  { opacity: var(--mist-opacity, 0.5); }
+  75%  { opacity: var(--mist-opacity, 0.5); }
+  100% { transform: translate3d(var(--mist-x, 8%), -46%, 0) scale(1.25); opacity: 0; }
+}
+.sillage-mist {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(14px);
+  will-change: transform, opacity;
+  animation: sillage-drift var(--mist-dur, 7s) ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes molecule-rise {
+  0%   { transform: translate3d(0, 0, 0) scale(0.6); opacity: 0; }
+  15%  { opacity: 0.75; }
+  85%  { opacity: 0.25; }
+  100% { transform: translate3d(var(--mol-x, 10px), -150px, 0) scale(1); opacity: 0; }
+}
+.molecule-dot {
+  position: absolute;
+  border-radius: 9999px;
+  background: currentColor;
+  will-change: transform, opacity;
+  animation: molecule-rise var(--mol-dur, 4.5s) ease-out infinite;
+  pointer-events: none;
+}
+
 /* ─── Reduced motion ─────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
@@ -682,6 +714,8 @@ a {
   .dot-grow,
   .rule-trace,
   .sillage-shimmer::after,
+  .sillage-mist,
+  .molecule-dot,
   .ticker-strip,
   .stamp-in,
   .ink-ripple,

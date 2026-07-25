@@ -1,23 +1,25 @@
 "use client";
 
 /**
- * 3D mannequin with "click-anywhere-on-the-body" placement.
+ * Mannequin 3D — placement "touche n'importe où" + points de zones guidés.
  *
- * Interaction model:
- *  - No predefined dots. The body is presented clean.
- *  - User taps/clicks any point on the body → we raycast the mesh, the hit
- *    gives us a precise 3D position, and we classify it into the closest
- *    anatomical region (BodyZone) so we keep stable labels for wishlist,
- *    layering, heatmap stats.
- *  - Camera dollies to the hit point and a pulsing "preview" marker is drawn
- *    exactly there. If the parent commits the placement, it becomes a solid
- *    marker with the perfume initials — again AT the exact click point, not
- *    snapped to a zone anchor.
- *  - Drag the canvas horizontally to orbit the model (access back-of-body).
+ * Modèle d'interaction :
+ *  - 15 points par défaut matérialisent les zones où poser un parfum
+ *    (poignets, cou, derrière l'oreille…). Tap sur un point = sélection
+ *    directe. Tap libre sur le corps = raycast précis + classification
+ *    vers la zone la plus proche. Les deux flux coexistent.
+ *  - La caméra dolly sur le point touché ; un marqueur preview pulse à
+ *    l'endroit exact avant confirmation.
+ *  - Couleur : chaque parfum de la session a sa teinte (palette olfactive).
+ *    Une zone multi-parfums devient une pile d'anneaux concentriques
+ *    colorés (layering) avec pop d'empilement.
  *
- * The `filledMarkers` prop carries the existing placements: each with its
- * zone (for labeling), initials (for display), and optional precise position.
- * When position is missing, we fall back to the zone anchor (legacy data).
+ * Fluidité :
+ *  - `frameloop="demand"` + bake d'ombre one-shot.
+ *  - Réglages utilisateur (qualité/vitesses) via le store mannequin.
+ *  - Tier auto : PerformanceMonitor ajuste la résolution en continu.
+ *  - Tier éco : pas d'ombres, marqueurs/points statiques (zéro rendu
+ *    hors gestes).
  */
 
 import {
@@ -29,21 +31,31 @@ import {
   type ComponentRef,
 } from "react";
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { CameraControls, Html, useGLTF } from "@react-three/drei";
+import {
+  CameraControls,
+  Html,
+  PerformanceMonitor,
+  useGLTF,
+} from "@react-three/drei";
 import CameraControlsImpl from "camera-controls";
 import * as THREE from "three";
 import { clsx } from "clsx";
 import { useTheme } from "next-themes";
 import { Icon } from "@/shared/ui/Icon";
 import type { BodyZone } from "@/features/mannequin/domain/body-zones";
+import {
+  ROTATE_SPEED_VALUES,
+  ZOOM_SPEED_VALUES,
+  resolveProfile,
+  useMannequinSettings,
+} from "@/features/mannequin/domain/settings";
 
 const MODEL_URL = "/models/mannequin.glb";
 const TARGET_HEIGHT = 1.85;
 
 /* -------------------------------------------------------------------------
- * Zone anchors — used for derivation ("which zone is this hit closest to?")
- * and as fallback marker positions for legacy placements without a stored
- * world position.
+ * Zone anchors — points par défaut, classification des taps libres et
+ * positions de secours pour les données legacy.
  * --------------------------------------------------------------------- */
 
 const ZONE_ANCHORS: Record<BodyZone, THREE.Vector3> = {
@@ -86,8 +98,13 @@ function closestZone(worldPoint: THREE.Vector3): BodyZone {
 export type PlacedMarker = {
   fragranceId: string;
   zone: BodyZone;
-  label: string; // perfume initials
+  label: string; // perfume initials or ×N
   position?: [number, number, number];
+  /** Couleur du (dernier) parfum posé — palette olfactive. */
+  color?: string;
+  /** Couleurs de la pile (layering), du plus ancien au plus récent.
+   *  Longueur > 1 → anneaux concentriques. */
+  stack?: string[];
   /** When true, this marker is rendered greyed-out — used in placement mode
    *  to signal "this zone is already taken; tapping = layering". */
   dimmed?: boolean;
@@ -123,10 +140,12 @@ function Mannequin({
   onBodyClick,
   readOnly,
   isDark,
+  shadows,
 }: {
   onBodyClick?: (zone: BodyZone, position: [number, number, number]) => void;
   readOnly: boolean;
   isDark: boolean;
+  shadows: boolean;
 }) {
   const { scene } = useGLTF(MODEL_URL);
 
@@ -149,12 +168,12 @@ function Mannequin({
       const mesh = obj as THREE.Mesh;
       if (mesh.isMesh) {
         mesh.material = clayMaterial;
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
+        mesh.castShadow = shadows;
+        mesh.receiveShadow = shadows;
         mesh.frustumCulled = false;
       }
     });
-  }, [scene, clayMaterial]);
+  }, [scene, clayMaterial, shadows]);
 
   const transform = useMemo(() => {
     const box = new THREE.Box3().setFromObject(scene);
@@ -200,36 +219,144 @@ function Mannequin({
 useGLTF.preload(MODEL_URL);
 
 /* -------------------------------------------------------------------------
- * Marker — drawn at a precise 3D point on the body
+ * Zone dots — les 15 points par défaut où poser un parfum
  * --------------------------------------------------------------------- */
+
+function ZoneDot({
+  zone,
+  color,
+  occupied,
+  animated,
+  offset,
+  onSelect,
+}: {
+  zone: BodyZone;
+  /** Couleur du dernier parfum si la zone est occupée, sinon null. */
+  color: string | null;
+  occupied: boolean;
+  animated: boolean;
+  offset: number;
+  onSelect: (zone: BodyZone, position: [number, number, number]) => void;
+}) {
+  const ref = useRef<THREE.Mesh>(null);
+  const anchor = ZONE_ANCHORS[zone];
+
+  // Respiration douce, déphasée par point pour un scintillement organique.
+  useFrame((state) => {
+    if (!animated || !ref.current) return;
+    const t = state.clock.elapsedTime;
+    ref.current.scale.setScalar(1 + Math.sin(t * 1.4 + offset) * 0.18);
+    state.invalidate();
+  });
+
+  return (
+    <group position={[anchor.x, anchor.y, anchor.z]}>
+      {/* Cible de tap élargie (invisible) — un point de 1cm serait
+          intouchable au doigt. */}
+      <mesh
+        visible={false}
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect(zone, [anchor.x, anchor.y, anchor.z]);
+        }}
+      >
+        <sphereGeometry args={[0.045, 8, 8]} />
+      </mesh>
+      <mesh ref={ref} renderOrder={2} raycast={() => null}>
+        <sphereGeometry args={[occupied ? 0.016 : 0.011, 10, 10]} />
+        <meshBasicMaterial
+          color={color ?? "#9c9488"}
+          transparent
+          opacity={occupied ? 0.95 : 0.55}
+          depthTest={false}
+        />
+      </mesh>
+      {/* Fin anneau autour du point libre — lisibilité "c'est une cible". */}
+      {!occupied && (
+        <mesh rotation={[Math.PI / 2, 0, 0]} renderOrder={2} raycast={() => null}>
+          <torusGeometry args={[0.022, 0.0012, 4, 20]} />
+          <meshBasicMaterial
+            color="#9c9488"
+            transparent
+            opacity={0.4}
+            depthTest={false}
+          />
+        </mesh>
+      )}
+    </group>
+  );
+}
+
+/* -------------------------------------------------------------------------
+ * Markers — colorés, avec pile d'anneaux pour le layering
+ * --------------------------------------------------------------------- */
+
+/** Anneau de layering : pop d'empilement (overshoot) puis statique. */
+function StackRing({
+  radius,
+  color,
+  animated,
+}: {
+  radius: number;
+  color: string;
+  animated: boolean;
+}) {
+  const ref = useRef<THREE.Mesh>(null);
+  const start = useRef<number | null>(null);
+
+  useFrame((state) => {
+    if (!animated || !ref.current) return;
+    if (start.current === null) start.current = state.clock.elapsedTime;
+    const t = state.clock.elapsedTime - start.current;
+    const D = 0.45;
+    if (t >= D) {
+      ref.current.scale.setScalar(1);
+      return; // pop terminé → plus d'invalidation, rendu au repos
+    }
+    // easeOutBack — le léger dépassement donne le "clac" physique.
+    const x = t / D;
+    const c1 = 1.70158;
+    const c3 = c1 + 1;
+    const eased = 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+    ref.current.scale.setScalar(0.3 + 0.7 * eased);
+    state.invalidate();
+  });
+
+  return (
+    <mesh ref={ref} rotation={[Math.PI / 2, 0, 0]} renderOrder={3} raycast={() => null}>
+      <torusGeometry args={[radius, 0.0042, 6, 24]} />
+      <meshBasicMaterial color={color} transparent opacity={0.95} depthTest={false} />
+    </mesh>
+  );
+}
 
 function Marker({
   position,
   label,
   highlighted,
   isDark,
+  color,
+  stack,
+  animated,
   dimmed = false,
 }: {
   position: [number, number, number];
   label: string;
   highlighted: boolean;
   isDark: boolean;
+  color?: string;
+  stack?: string[];
+  animated: boolean;
   dimmed?: boolean;
 }) {
-  // Dimmed markers use a lighter grey to signal "zone already occupied —
-  // tapping means layering". Crisp markers remain black/white for fresh poses.
-  const color = dimmed
-    ? isDark
-      ? "#6b6764"
-      : "#a8a39d"
-    : isDark
-      ? "#f0ede8"
-      : "#000";
+  const baseColor = color ?? (isDark ? "#f0ede8" : "#000");
   const haloRef = useRef<THREE.Mesh>(null);
   const spotRef = useRef<THREE.Mesh>(null);
+  const layered = (stack?.length ?? 0) > 1;
 
   useFrame((state) => {
-    if (!highlighted || !haloRef.current || !spotRef.current) return;
+    if (!animated || !highlighted || !haloRef.current || !spotRef.current)
+      return;
     const t = state.clock.elapsedTime;
     const wave = (Math.sin(t * 1.6) + 1) / 2;
     haloRef.current.scale.setScalar(1 + wave * 0.55);
@@ -241,19 +368,36 @@ function Marker({
 
   return (
     <group position={position}>
-      <mesh ref={haloRef} renderOrder={2}>
+      <mesh ref={haloRef} renderOrder={2} raycast={() => null}>
         <sphereGeometry args={[0.05, 12, 12]} />
         <meshBasicMaterial
-          color={color}
+          color={baseColor}
           transparent
-          opacity={dimmed ? 0.4 : 0.22}
+          opacity={dimmed ? 0.3 : 0.25}
           depthTest={false}
         />
       </mesh>
-      <mesh ref={spotRef} renderOrder={3}>
-        <sphereGeometry args={[0.025, 12, 12]} />
-        <meshBasicMaterial color={color} transparent opacity={dimmed ? 0.7 : 1} depthTest={false} />
+      <mesh ref={spotRef} renderOrder={3} raycast={() => null}>
+        <sphereGeometry args={[0.02, 12, 12]} />
+        <meshBasicMaterial
+          color={baseColor}
+          transparent
+          opacity={dimmed ? 0.65 : 1}
+          depthTest={false}
+        />
       </mesh>
+
+      {/* Layering : un anneau concentrique par parfum de la pile. */}
+      {layered &&
+        stack!.map((ringColor, i) => (
+          <StackRing
+            key={`${ringColor}-${i}`}
+            radius={0.034 + i * 0.015}
+            color={ringColor}
+            animated={animated}
+          />
+        ))}
+
       {label && highlighted && (
         <Html
           position={[0.05, 0.04, 0]}
@@ -262,7 +406,10 @@ function Marker({
           zIndexRange={[50, 0]}
           style={{ pointerEvents: "none" }}
         >
-          <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-on-background bg-background/95 px-2 py-0.5 border border-outline-variant whitespace-nowrap">
+          <span
+            className="text-[10px] font-mono font-bold uppercase tracking-widest bg-background/95 px-2 py-0.5 border whitespace-nowrap"
+            style={{ borderColor: baseColor, color: baseColor }}
+          >
             {label}
           </span>
         </Html>
@@ -275,9 +422,11 @@ function Marker({
 function PreviewMarker({
   position,
   isDark,
+  animated,
 }: {
   position: [number, number, number];
   isDark: boolean;
+  animated: boolean;
 }) {
   const color = isDark ? "#f0ede8" : "#000";
   const haloRef = useRef<THREE.Mesh>(null);
@@ -285,6 +434,7 @@ function PreviewMarker({
   const ring2Ref = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
+    if (!animated) return;
     const t = state.clock.elapsedTime;
     const wave = (Math.sin(t * 1.8) + 1) / 2;
     if (haloRef.current) {
@@ -313,7 +463,7 @@ function PreviewMarker({
 
   return (
     <group position={position}>
-      <mesh ref={haloRef} renderOrder={2}>
+      <mesh ref={haloRef} renderOrder={2} raycast={() => null}>
         <sphereGeometry args={[0.05, 12, 12]} />
         <meshBasicMaterial
           color={color}
@@ -322,11 +472,11 @@ function PreviewMarker({
           depthTest={false}
         />
       </mesh>
-      <mesh renderOrder={3}>
+      <mesh renderOrder={3} raycast={() => null}>
         <sphereGeometry args={[0.022, 12, 12]} />
         <meshBasicMaterial color={color} depthTest={false} />
       </mesh>
-      <mesh ref={ring1Ref} rotation={[Math.PI / 2, 0, 0]} renderOrder={3}>
+      <mesh ref={ring1Ref} rotation={[Math.PI / 2, 0, 0]} renderOrder={3} raycast={() => null}>
         <torusGeometry args={[0.03, 0.002, 4, 16]} />
         <meshBasicMaterial
           color={color}
@@ -335,7 +485,7 @@ function PreviewMarker({
           depthTest={false}
         />
       </mesh>
-      <mesh ref={ring2Ref} rotation={[Math.PI / 2, 0, 0]} renderOrder={3}>
+      <mesh ref={ring2Ref} rotation={[Math.PI / 2, 0, 0]} renderOrder={3} raycast={() => null}>
         <torusGeometry args={[0.03, 0.0015, 4, 16]} />
         <meshBasicMaterial
           color={color}
@@ -365,7 +515,7 @@ const OVERVIEW = {
  * The mannequin is static (only the camera moves) so the shadow map only
  * needs to be rendered ONCE after the model loads. We force a single update
  * 400ms after mount, then the shadow stays cached forever — no per-frame
- * shadow render. This is the single biggest perf win on this scene.
+ * shadow render.
  */
 function StaticShadowKey() {
   const ref = useRef<THREE.DirectionalLight>(null);
@@ -391,12 +541,8 @@ function StaticShadowKey() {
       intensity={1.2}
       color="#fff2dc"
       castShadow
-      // 1024² instead of 2048² → 4× less work for the one-shot bake, and the
-      // resulting cached shadow is plenty sharp at this scene scale.
       shadow-mapSize-width={1024}
       shadow-mapSize-height={1024}
-      // Tight ortho frustum: only covers the mannequin volume — every wasted
-      // pixel of shadow camera = wasted shadow render.
       shadow-camera-near={1}
       shadow-camera-far={6}
       shadow-camera-left={-1.2}
@@ -432,7 +578,7 @@ function CameraController({
   // ─── Gestes mobiles natifs ────────────────────────────────────────────
   // 1 doigt  : rotation azimutale (le vertical est laissé au scroll de la
   //            page via touch-action: pan-y sur le conteneur).
-  // 2 doigts : pinch = zoom (dolly). C'était bloqué par dollySpeed=0.
+  // 2 doigts : pinch = zoom (dolly), vers le point pincé (dollyToCursor).
   // Molette  : neutralisée — le scroll desktop ne doit jamais être capturé.
   useEffect(() => {
     const c = controlsRef.current;
@@ -452,18 +598,9 @@ function CameraController({
     if (!c) return;
     if (focusPoint) {
       const [x, y, z] = focusPoint;
-      // Top-down 3/4 view: camera ABOVE the click point and slightly in front.
-      // This is the angle a perfumer/illustrator would use when applying — you
-      // see the surface flat, perfect for "drawing" the placement spot.
-      c.setLookAt(
-        x,         // same X (no lateral offset → straight from above)
-        y + 0.45,  // 45cm above the click point
-        z + 0.45,  // 45cm in front (so we look down + slightly back)
-        x,
-        y,
-        z,
-        true, // animated (uses smoothTime for the dolly)
-      );
+      // Top-down 3/4 view: camera ABOVE the click point and slightly in
+      // front — l'angle du parfumeur qui applique.
+      c.setLookAt(x, y + 0.45, z + 0.45, x, y, z, true);
     } else {
       c.setLookAt(
         OVERVIEW.pos[0],
@@ -496,6 +633,21 @@ export function BodySilhouette3D({
 }: Props) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
+
+  // ─── Réglages de fluidité ────────────────────────────────────────────
+  const settings = useMannequinSettings();
+  const profile = resolveProfile(settings.quality);
+  /** Résolution courante — pilotée par PerformanceMonitor en mode auto. */
+  const [adaptiveDpr, setAdaptiveDpr] = useState(
+    Math.min(1.25, profile.dprRange[1]),
+  );
+  /** Coupe-circuit ombres du mode auto quand ça rame vraiment. */
+  const [autoShadows, setAutoShadows] = useState(true);
+  const shadows = profile.shadows && (profile.adaptive ? autoShadows : true);
+  const animations = profile.markerAnimations;
+  const dpr: number | [number, number] = profile.adaptive
+    ? adaptiveDpr
+    : profile.dprRange;
 
   const [focusPoint, setFocusPoint] = useState<[number, number, number] | null>(
     null,
@@ -534,8 +686,7 @@ export function BodySilhouette3D({
     if (readOnly) return;
     // Camera zoom always — useful even when just inspecting.
     setFocusPoint(position);
-    // Preview marker only when the parent says we're placing. Otherwise the
-    // user is just looking around and shouldn't see a stray dot appear.
+    // Preview marker only when the parent says we're placing.
     if (placementMode) {
       setPreviewPoint(position);
     } else {
@@ -551,18 +702,24 @@ export function BodySilhouette3D({
 
   const filledCount = poseCount ?? filledMarkers.length;
 
+  /** Zone → marqueur (pour colorer les points par défaut). */
+  const markerByZone = useMemo(() => {
+    const m = new Map<BodyZone, PlacedMarker>();
+    for (const marker of filledMarkers) m.set(marker.zone, marker);
+    return m;
+  }, [filledMarkers]);
+
   return (
     <div
       className={clsx("relative w-full max-w-[380px] mx-auto", className)}
-      // pan-y : un doigt vertical fait défiler la PAGE (le canvas ne
-      // confisque plus le scroll) ; l'horizontal tourne le mannequin,
-      // le pinch à deux doigts zoome.
+      // pan-y : un doigt vertical fait défiler la PAGE ; l'horizontal
+      // tourne le mannequin, le pinch à deux doigts zoome.
       style={{ aspectRatio: "3 / 4", touchAction: "pan-y" }}
     >
       <Canvas
-        shadows={{ type: THREE.PCFShadowMap }}
+        shadows={shadows ? { type: THREE.PCFShadowMap } : false}
         frameloop="demand"
-        dpr={[1, 1.5]}
+        dpr={dpr}
         camera={{ position: [...OVERVIEW.pos], fov: 36 }}
         gl={{
           antialias: false,
@@ -571,10 +728,37 @@ export function BodySilhouette3D({
         }}
         onPointerMissed={() => !readOnly && resetView()}
       >
+        {profile.adaptive && (
+          <PerformanceMonitor
+            // Ajuste la résolution en continu selon les FPS réels du
+            // téléphone — le cœur du "on s'adapte aux vieux téléphones".
+            onChange={({ factor }) => {
+              const [min, max] = profile.dprRange;
+              setAdaptiveDpr(
+                Math.round((min + (max - min) * factor) * 100) / 100,
+              );
+            }}
+            // Ça décline encore à basse résolution → on coupe les ombres.
+            onDecline={() => {
+              if (adaptiveDpr <= profile.dprRange[0] + 0.05) {
+                setAutoShadows(false);
+              }
+            }}
+          />
+        )}
+
         <color attach="background" args={[isDark ? "#0f0f0e" : "#ece8e2"]} />
 
         <ambientLight intensity={isDark ? 0.75 : 0.55} />
-        <StaticShadowKey />
+        {shadows ? (
+          <StaticShadowKey />
+        ) : (
+          <directionalLight
+            position={[2.4, 3.2, 2.8]}
+            intensity={1.2}
+            color="#fff2dc"
+          />
+        )}
         <directionalLight
           position={[0, 2.5, -2.5]}
           intensity={isDark ? 0.85 : 0.6}
@@ -582,10 +766,32 @@ export function BodySilhouette3D({
         />
 
         <Suspense fallback={null}>
-          <Mannequin onBodyClick={handleBodyClick} readOnly={readOnly} isDark={isDark} />
+          <Mannequin
+            onBodyClick={handleBodyClick}
+            readOnly={readOnly}
+            isDark={isDark}
+            shadows={shadows}
+          />
         </Suspense>
 
-        <ShadowFloor />
+        {shadows && <ShadowFloor />}
+
+        {/* Points par défaut : les zones où poser un parfum. */}
+        {placementMode &&
+          ALL_ZONES.map((zone, i) => {
+            const marker = markerByZone.get(zone);
+            return (
+              <ZoneDot
+                key={zone}
+                zone={zone}
+                occupied={Boolean(marker)}
+                color={marker?.color ?? null}
+                animated={animations && !marker}
+                offset={i * 0.7}
+                onSelect={handleBodyClick}
+              />
+            );
+          })}
 
         {filledMarkers.map((m, i) => {
           const pos: [number, number, number] = m.position ?? [
@@ -601,23 +807,30 @@ export function BodySilhouette3D({
               label={m.label}
               highlighted={isHighlighted}
               isDark={isDark}
+              color={m.color}
+              stack={m.stack}
+              animated={animations}
               dimmed={m.dimmed ?? false}
             />
           );
         })}
 
-        {previewPoint && <PreviewMarker position={previewPoint} isDark={isDark} />}
-
-        {/* ContactShadows removed — adds a per-frame FBO render pass.
-            The directional shadow on the floor handles ground anchoring. */}
+        {previewPoint && (
+          <PreviewMarker
+            position={previewPoint}
+            isDark={isDark}
+            animated={animations}
+          />
+        )}
 
         <CameraControls
           ref={controlsRef}
           minPolarAngle={Math.PI / 6}
           maxPolarAngle={Math.PI / 2 + 0.15}
-          polarRotateSpeed={0.6}
-          azimuthRotateSpeed={0.9}
-          dollySpeed={0.7}
+          polarRotateSpeed={ROTATE_SPEED_VALUES[settings.rotateSpeed] * 0.66}
+          azimuthRotateSpeed={ROTATE_SPEED_VALUES[settings.rotateSpeed]}
+          dollySpeed={ZOOM_SPEED_VALUES[settings.zoomSpeed]}
+          dollyToCursor
           truckSpeed={0}
           minDistance={0.35}
           maxDistance={4.5}
@@ -655,7 +868,7 @@ export function BodySilhouette3D({
 
       {!readOnly && filledCount === 0 && !previewPoint && (
         <div className="absolute top-2 left-2 px-3 py-1.5 bg-background/95 backdrop-blur border border-outline-variant text-[10px] uppercase tracking-widest font-bold z-10 max-w-[calc(100%-4rem)]">
-          Touche n&apos;importe où sur le corps
+          Touche un point ou n&apos;importe où sur le corps
         </div>
       )}
     </div>

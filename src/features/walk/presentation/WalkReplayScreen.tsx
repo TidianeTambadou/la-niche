@@ -23,6 +23,10 @@ import {
   type ApplicationWithInsights,
 } from "@/features/walk/infrastructure/walk-repository";
 import { toast } from "@/shared/ui/Toaster";
+import {
+  assignSessionColors,
+  colorFor,
+} from "@/features/mannequin/domain/palette";
 import { ZoneStackSheet } from "./ZoneStackSheet";
 
 function initials(name: string): string {
@@ -82,6 +86,12 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
     [applications, cursor],
   );
 
+  /** Couleurs stables sur TOUTE la balade (pas seulement le visible). */
+  const sessionColors = useMemo(
+    () => assignSessionColors((applications ?? []).map((a) => a.perfumeName)),
+    [applications],
+  );
+
   const markers = useMemo<PlacedMarker[]>(() => {
     const byZone = new Map<BodyZone, ApplicationWithInsights[]>();
     for (const app of visible) {
@@ -97,9 +107,11 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
         label:
           apps.length > 1 ? `×${apps.length}` : initials(last.perfumeName),
         position: last.position ?? undefined,
+        color: colorFor(sessionColors, last.perfumeName),
+        stack: apps.map((a) => colorFor(sessionColors, a.perfumeName)),
       };
     });
-  }, [visible]);
+  }, [visible, sessionColors]);
 
   const openZoneApps = useMemo(
     () => (openZone ? visible.filter((a) => a.bodyZone === openZone) : []),
@@ -278,10 +290,12 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
               )}
               <span
                 aria-hidden
-                className={clsx(
-                  "absolute left-0 top-1.5 w-3 h-3 border-2 border-on-background transition-colors duration-300",
-                  shown ? "bg-on-background" : "bg-background",
-                )}
+                className="absolute left-0 top-1.5 w-3 h-3 border-2 border-on-background transition-colors duration-300"
+                style={{
+                  backgroundColor: shown
+                    ? colorFor(sessionColors, app.perfumeName)
+                    : "transparent",
+                }}
               />
               <div
                 className={clsx(
@@ -353,6 +367,7 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
       <ZoneStackSheet
         zone={openZone}
         applications={openZoneApps}
+        sessionColors={sessionColors}
         readOnly
         onClose={() => setOpenZone(null)}
       />
