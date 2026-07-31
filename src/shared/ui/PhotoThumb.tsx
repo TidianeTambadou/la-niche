@@ -43,7 +43,7 @@ export function PhotoThumb({ path, alt, className }: Props) {
     return (
       <div
         className={clsx(
-          "bg-surface-container-low border-2 border-on-background/20 flex items-center justify-center text-on-background/30",
+          "flex items-center justify-center rounded-2xl bg-surface-container-high text-on-surface-variant/50",
           className,
         )}
         aria-hidden
@@ -56,7 +56,7 @@ export function PhotoThumb({ path, alt, className }: Props) {
   return (
     <div
       className={clsx(
-        "relative overflow-hidden border-2 border-on-background",
+        "relative overflow-hidden rounded-2xl",
         !loaded && "shimmer-bar",
         className,
       )}

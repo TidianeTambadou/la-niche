@@ -36,10 +36,10 @@ function Segmented<T extends string>({
             onChange(opt);
           }}
           className={clsx(
-            "rounded-full border-2 border-on-background px-3.5 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest transition-all duration-150 active:scale-95",
+            "rounded-full px-4 py-2 text-[11px] font-extrabold uppercase tracking-wider transition-all duration-150 active:scale-95",
             value === opt
-              ? "bg-on-background text-background"
-              : "bg-background text-on-background/60 hover:text-on-background",
+              ? "bg-pop text-on-pop"
+              : "bg-surface-container-high text-on-surface-variant hover:text-on-background",
           )}
         >
           {labels[opt]}
@@ -49,7 +49,8 @@ function Segmented<T extends string>({
   );
 }
 
-const labelClass = "font-mono text-xs tracking-widest uppercase opacity-60";
+const labelClass =
+  "text-[11px] font-extrabold uppercase tracking-[0.14em] text-on-surface-variant";
 
 /**
  * Réglages de fluidité du mannequin — appliqués en direct au canvas

@@ -139,12 +139,10 @@ type Props = {
 function Mannequin({
   onBodyClick,
   readOnly,
-  isDark,
   shadows,
 }: {
   onBodyClick?: (zone: BodyZone, position: [number, number, number]) => void;
   readOnly: boolean;
-  isDark: boolean;
   shadows: boolean;
 }) {
   const { scene } = useGLTF(MODEL_URL);
@@ -152,13 +150,12 @@ function Mannequin({
   const clayMaterial = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        // Dark : argile plus claire — le corps doit rester lisible sur
-        // fond noir profond, pas se fondre dedans.
-        color: isDark ? "#726c65" : "#d8d5d0",
+        // Gris neutre lisible sur la carte charbon (DA Club, thème unique).
+        color: "#8a8892",
         roughness: 0.82,
         metalness: 0.02,
       }),
-    [isDark],
+    [],
   );
 
   useEffect(() => () => { clayMaterial.dispose(); }, [clayMaterial]);
@@ -407,8 +404,8 @@ function Marker({
           style={{ pointerEvents: "none" }}
         >
           <span
-            className="text-[10px] font-mono font-bold uppercase tracking-widest bg-background/95 px-2 py-0.5 border whitespace-nowrap"
-            style={{ borderColor: baseColor, color: baseColor }}
+            className="whitespace-nowrap rounded-full bg-black/70 px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider backdrop-blur"
+            style={{ color: baseColor }}
           >
             {label}
           </span>
@@ -747,21 +744,22 @@ export function BodySilhouette3D({
           />
         )}
 
-        <color attach="background" args={[isDark ? "#0f0f0e" : "#ece8e2"]} />
+        {/* Thème unique Club : fond = couleur des cartes. */}
+        <color attach="background" args={["#1c1c1f"]} />
 
-        <ambientLight intensity={isDark ? 0.75 : 0.55} />
+        <ambientLight intensity={0.8} />
         {shadows ? (
           <StaticShadowKey />
         ) : (
           <directionalLight
             position={[2.4, 3.2, 2.8]}
-            intensity={1.2}
-            color="#fff2dc"
+            intensity={1.15}
+            color="#ffffff"
           />
         )}
         <directionalLight
           position={[0, 2.5, -2.5]}
-          intensity={isDark ? 0.85 : 0.6}
+          intensity={0.8}
           color="#ffffff"
         />
 
@@ -769,7 +767,6 @@ export function BodySilhouette3D({
           <Mannequin
             onBodyClick={handleBodyClick}
             readOnly={readOnly}
-            isDark={isDark}
             shadows={shadows}
           />
         </Suspense>
@@ -848,27 +845,27 @@ export function BodySilhouette3D({
           type="button"
           onClick={resetView}
           aria-label="Vue d'ensemble"
-          className="absolute top-2 right-2 px-3 py-1.5 bg-background/95 backdrop-blur border border-outline-variant text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5 active:scale-95 transition-transform z-10"
+          className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-black/60 px-4 py-2 text-[11px] font-extrabold uppercase tracking-wider text-white backdrop-blur active:scale-95 transition-transform"
         >
-          <Icon name="zoom_out" size={12} />
+          <Icon name="zoom_out" size={13} />
           Vue d&apos;ensemble
         </button>
       )}
 
       {filledCount > 0 && (
-        <div className="absolute bottom-2 left-2 px-3 py-1.5 bg-background/95 backdrop-blur border border-outline-variant text-[10px] uppercase tracking-widest font-mono z-10">
+        <div className="absolute bottom-3 left-3 z-10 rounded-full bg-black/60 px-3.5 py-1.5 text-[11px] font-extrabold text-white backdrop-blur">
           {filledCount} pose{filledCount > 1 ? "s" : ""}
         </div>
       )}
 
-      <div className="absolute bottom-2 right-2 px-3 py-1.5 bg-background/95 backdrop-blur border border-outline-variant text-[9px] uppercase tracking-widest font-mono text-outline z-10 flex items-center gap-1.5">
-        <Icon name="360" size={11} />
-        Tourner · pincer pour zoomer
+      <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 rounded-full bg-black/60 px-3.5 py-1.5 text-[10px] font-bold text-white/70 backdrop-blur">
+        <Icon name="360" size={12} />
+        Tourner · pincer
       </div>
 
       {!readOnly && filledCount === 0 && !previewPoint && (
-        <div className="absolute top-2 left-2 px-3 py-1.5 bg-background/95 backdrop-blur border border-outline-variant text-[10px] uppercase tracking-widest font-bold z-10 max-w-[calc(100%-4rem)]">
-          Touche un point ou n&apos;importe où sur le corps
+        <div className="absolute top-3 left-3 z-10 max-w-[calc(100%-4rem)] rounded-full bg-black/60 px-4 py-2 text-[11px] font-extrabold text-white backdrop-blur">
+          Touche un point du corps ✨
         </div>
       )}
     </div>

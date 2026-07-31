@@ -2,9 +2,7 @@ import { clsx } from "clsx";
 import type { ReactNode } from "react";
 
 /**
- * Label de section — remplace l'ancien style `LA_NICHE://XXX`.
- * Un court filet 2px, puis un libellé espacé en petites capitales mono.
- * Élégant, technique, sans jargon d'URL.
+ * Label de section Club : petit, gras, espacé, gris — sans fioriture.
  */
 export function SectionLabel({
   children,
@@ -19,12 +17,11 @@ export function SectionLabel({
   return (
     <span
       className={clsx(
-        "inline-flex items-center gap-3 font-mono text-[10px] uppercase opacity-55",
-        animated ? "hero-label" : "tracking-[0.35em]",
+        "inline-flex items-center gap-2 text-[11px] font-extrabold uppercase text-on-surface-variant",
+        animated ? "hero-label" : "tracking-[0.14em]",
         className,
       )}
     >
-      <span aria-hidden className="w-6 h-[2px] bg-on-background shrink-0" />
       {children}
     </span>
   );

@@ -4,8 +4,7 @@ import { useFormStatus } from "react-dom";
 import type { ReactNode } from "react";
 
 /**
- * Bouton primaire brutalist branché sur l'état du formulaire parent :
- * pending = désactivé + libellé neutre.
+ * CTA principal Club : pilule coral pleine, feedback scale au tap.
  */
 export function SubmitButton({ children }: { children: ReactNode }) {
   const { pending } = useFormStatus();
@@ -14,7 +13,7 @@ export function SubmitButton({ children }: { children: ReactNode }) {
     <button
       type="submit"
       disabled={pending}
-      className="press-cta font-sans font-semibold text-sm tracking-widest uppercase bg-on-background text-background border-2 border-on-background px-6 py-3.5 rounded-none shadow-[4px_4px_0px_0px_currentColor] disabled:opacity-60 disabled:cursor-wait inline-flex items-center justify-center"
+      className="w-full rounded-full bg-pop px-6 py-4 text-[13px] font-extrabold uppercase tracking-wider text-on-pop active:scale-95 transition-transform disabled:opacity-60"
     >
       {pending ? "Un instant…" : children}
     </button>

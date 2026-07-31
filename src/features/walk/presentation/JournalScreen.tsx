@@ -85,18 +85,18 @@ export function JournalScreen() {
       <ScreenHero label="Mémoire olfactive" titleLines={["Journal"]} />
 
       {/* ─── Stats du nez ─── */}
-      <div className="grid grid-cols-3 border-2 border-on-background divide-x-2 divide-on-background">
+      <div className="grid grid-cols-3 gap-3">
         {[
           { value: stats.walks, label: "Balades" },
           { value: stats.perfumes, label: "Parfums" },
           { value: stats.houses, label: "Maisons" },
         ].map((s) => (
-          <div key={s.label} className="flex flex-col items-center py-3.5 gap-0.5">
+          <div key={s.label} className="flex flex-col items-center gap-0.5 rounded-[22px] bg-surface-container-low py-4">
             <TimeTicker
               value={String(s.value)}
-              className="font-mono font-bold text-2xl tabular-nums"
+              className="title-mega text-3xl text-pop tabular-nums"
             />
-            <span className="font-mono text-[9px] uppercase tracking-widest opacity-50">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
               {s.label}
             </span>
           </div>
@@ -104,7 +104,7 @@ export function JournalScreen() {
       </div>
 
       {stats.favoriteZone && (
-        <p className="font-cormorant italic text-sm opacity-60 text-center -mt-2">
+        <p className="-mt-2 text-center text-[12px] font-semibold text-on-surface-variant">
           Zone de prédilection :{" "}
           {BODY_ZONE_LABELS[stats.favoriteZone as keyof typeof BODY_ZONE_LABELS]}
         </p>
@@ -114,7 +114,7 @@ export function JournalScreen() {
       {walks === null ? (
         <div className="flex flex-col gap-3" aria-busy>
           {[0, 1].map((i) => (
-            <div key={i} className="shimmer-bar h-20 border-2 border-on-background/10" />
+            <div key={i} className="shimmer-bar h-20 rounded-[22px]" />
           ))}
         </div>
       ) : walks.length === 0 ? (
@@ -132,25 +132,25 @@ export function JournalScreen() {
               >
                 <Link
                   href={`/journal/${walk.id}`}
-                  className="group flex items-center gap-4 bg-background border-2 border-on-background p-4 shadow-[4px_4px_0px_0px_currentColor] transition-all duration-150 hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_currentColor] active:translate-x-0 active:translate-y-0 active:shadow-[2px_2px_0px_0px_currentColor]"
+                  className="group flex items-center gap-4 rounded-[22px] bg-surface-container-low p-4 transition-transform duration-150 active:scale-[0.98]"
                 >
-                  <div className="w-14 h-14 border-2 border-on-background flex flex-col items-center justify-center shrink-0">
-                    <span className="font-mono text-[9px] font-bold uppercase tracking-wider">
+                  <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-surface-container-high">
+                    <span className="text-[10px] font-extrabold uppercase">
                       {walkDate(walk.startedAt).split(" ")[1]}
                     </span>
-                    <span className="font-mono text-[9px] uppercase tracking-wider opacity-60">
+                    <span className="text-[10px] font-bold uppercase text-on-surface-variant">
                       {walkDate(walk.startedAt).split(" ")[2]}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-sans font-bold text-sm tracking-tight truncate">
+                    <p className="truncate text-[15px] font-extrabold tracking-tight">
                       {walk.title || `Balade du ${walkDate(walk.startedAt).toLowerCase()}`}
                     </p>
-                    <p className="font-mono text-[10px] uppercase tracking-widest opacity-50 mt-1">
+                    <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                       {poses} pose{poses > 1 ? "s" : ""} · {walkDuration(walk)}
                       {active && (
                         <span className="ml-2 inline-flex items-center gap-1">
-                          <span className="live-pulse inline-block w-1.5 h-1.5 rounded-full bg-on-background" />
+                          <span className="live-pulse inline-block w-1.5 h-1.5 rounded-full bg-pop" />
                           En cours
                         </span>
                       )}

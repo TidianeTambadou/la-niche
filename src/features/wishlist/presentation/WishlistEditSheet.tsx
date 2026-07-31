@@ -28,7 +28,7 @@ type Props = {
   onDelete: (id: string) => Promise<void>;
 };
 
-/** Segments arrondis (chips) — sélection inversée noir/blanc. */
+/** Segments Club — pills, sélection coral. */
 function Segmented<T extends string>({
   options,
   labels,
@@ -48,10 +48,10 @@ function Segmented<T extends string>({
           type="button"
           onClick={() => onChange(opt)}
           className={clsx(
-            "rounded-full border-2 border-on-background px-3.5 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest transition-all duration-150 active:scale-95",
+            "rounded-full px-4 py-2 text-[11px] font-extrabold uppercase tracking-wider transition-all duration-150 active:scale-95",
             value === opt
-              ? "bg-on-background text-background"
-              : "bg-background text-on-background/60 hover:text-on-background",
+              ? "bg-pop text-on-pop"
+              : "bg-surface-container-high text-on-surface-variant hover:text-on-background",
           )}
         >
           {labels[opt]}
@@ -126,8 +126,9 @@ export function WishlistEditSheet({ item, onClose, onSave, onDelete }: Props) {
   }
 
   const fieldClass =
-    "w-full px-4 py-3 bg-background text-on-background border-2 border-on-background font-mono text-sm rounded-none focus:outline-none focus:shadow-[4px_4px_0px_0px_currentColor] placeholder:opacity-40 transition-shadow";
-  const labelClass = "font-mono text-xs tracking-widest uppercase opacity-60";
+    "w-full rounded-2xl bg-surface-container-high px-4 py-3.5 text-sm font-semibold text-on-background placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-pop transition-shadow";
+  const labelClass =
+    "text-[11px] font-extrabold uppercase tracking-[0.14em] text-on-surface-variant";
 
   return (
     <BottomSheet
@@ -145,7 +146,7 @@ export function WishlistEditSheet({ item, onClose, onSave, onDelete }: Props) {
           className="relative group active:scale-95 transition-transform"
         >
           <PhotoThumb path={photoPath} alt={name} className="w-24 h-24" />
-          <span className="absolute -bottom-2 -right-2 w-8 h-8 bg-on-background text-background flex items-center justify-center border-2 border-background">
+          <span className="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full bg-pop text-on-pop">
             <Icon name="photo_camera" size={15} />
           </span>
         </button>
@@ -206,7 +207,7 @@ export function WishlistEditSheet({ item, onClose, onSave, onDelete }: Props) {
           type="button"
           onClick={save}
           disabled={busy}
-          className="press-cta flex-1 font-sans font-semibold text-sm tracking-widest uppercase bg-on-background text-background border-2 border-on-background px-6 py-3.5 shadow-[4px_4px_0px_0px_currentColor] disabled:opacity-50"
+          className="flex-1 rounded-full bg-pop px-6 py-4 text-[13px] font-extrabold uppercase tracking-wider text-on-pop active:scale-95 transition-transform disabled:opacity-50"
         >
           {busy ? "…" : "Enregistrer"}
         </button>
@@ -215,7 +216,7 @@ export function WishlistEditSheet({ item, onClose, onSave, onDelete }: Props) {
           onClick={remove}
           disabled={busy}
           aria-label="Supprimer"
-          className="w-[52px] h-[52px] border-2 border-on-background flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+          className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-surface-container-high active:scale-95 transition-transform disabled:opacity-50"
         >
           <Icon name="delete" size={20} />
         </button>

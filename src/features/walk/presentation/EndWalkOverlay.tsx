@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { SectionLabel } from "@/shared/ui/brutalist/SectionLabel";
 
 type Props = {
   posesCount: number;
@@ -11,61 +10,38 @@ type Props = {
 };
 
 /**
- * Fin de balade — cascade cinématique `done-screen` : brand, check qui se
- * trace, titre monumental, stats, CTA. Chaque élément entre en séquence
- * (~1.4s au total).
+ * Fin de balade Club — carte lime qui claque, stats en gros, CTA pill.
+ * La cascade `done-screen` orchestre l'entrée de chaque élément.
  */
 export function EndWalkOverlay({ posesCount, duration, onClose }: Props) {
   return (
-    <div className="fixed inset-0 z-[60] bg-background flex items-center justify-center px-8">
-      <div className="done-screen flex flex-col items-center text-center gap-5 max-w-xs w-full">
-        <div className="done-brand">
-          <SectionLabel>La Niche — Mémoire</SectionLabel>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background px-6">
+      <div className="done-screen flex w-full max-w-sm flex-col gap-4">
+        <div className="done-check rounded-[26px] bg-lime p-7 text-on-lime">
+          <h2 className="title-mega text-6xl">Pliée.</h2>
+          <p className="mt-2 text-sm font-bold opacity-80">
+            Ta balade est dans le journal
+          </p>
         </div>
 
-        <svg
-          className="done-check"
-          width="72"
-          height="72"
-          viewBox="0 0 72 72"
-          fill="none"
-          aria-hidden
-        >
-          <rect
-            x="4"
-            y="4"
-            width="64"
-            height="64"
-            stroke="currentColor"
-            strokeWidth="3"
-          />
-          <path
-            className="done-check-path"
-            d="M22 37 L32 47 L52 26"
-            stroke="currentColor"
-            strokeWidth="4"
-            strokeLinecap="square"
-            fill="none"
-          />
-        </svg>
-
-        <div className="done-title">
-          <h2 className="font-sans font-black text-4xl tracking-tighter uppercase leading-none">
-            Balade
-            <span className="block ml-6">Archivée</span>
-          </h2>
-          <div className="done-underline h-[3px] bg-on-background mt-3" />
+        <div className="done-title grid grid-cols-2 gap-3">
+          <div className="rounded-[22px] bg-surface-container-low p-4">
+            <div className="title-mega text-4xl text-pop">{posesCount}</div>
+            <div className="mt-1 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+              Pose{posesCount > 1 ? "s" : ""}
+            </div>
+          </div>
+          <div className="rounded-[22px] bg-surface-container-low p-4">
+            <div className="title-mega text-4xl">{duration}</div>
+            <div className="mt-1 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+              De session
+            </div>
+          </div>
         </div>
-
-        <p className="done-headline font-cormorant italic text-lg opacity-70">
-          {posesCount} pose{posesCount > 1 ? "s" : ""} · {duration}
-          <br />
-          « Chaque essai est désormais mémoire. »
-        </p>
 
         <Link
           href="/journal"
-          className="done-cta press-cta w-full font-sans font-semibold text-sm tracking-widest uppercase bg-on-background text-background border-2 border-on-background px-6 py-4 shadow-[4px_4px_0px_0px_currentColor] inline-block"
+          className="done-cta block rounded-full bg-on-background px-6 py-4 text-center text-[13px] font-extrabold uppercase tracking-wider text-on-primary active:scale-95 transition-transform"
         >
           Voir le journal →
         </Link>
@@ -73,7 +49,7 @@ export function EndWalkOverlay({ posesCount, duration, onClose }: Props) {
         <button
           type="button"
           onClick={onClose}
-          className="done-thanks font-mono text-xs uppercase tracking-widest opacity-60 hover:opacity-100 underline-offset-4 hover:underline"
+          className="done-thanks text-center text-[12px] font-bold text-on-surface-variant hover:text-on-background transition-colors"
         >
           Fermer
         </button>

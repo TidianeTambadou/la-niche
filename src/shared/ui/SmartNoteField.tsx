@@ -38,9 +38,9 @@ function toggleTerm(value: string, term: string): string {
 }
 
 /**
- * Prise de note intelligente — le vocabulaire du parfumeur en chips
- * au-dessus du champ. Un tap insère le terme (retap = retire), la saisie
- * libre reste reine. Chips actives = déjà dans la note (inversées).
+ * Prise de note intelligente — le vocabulaire du parfumeur en pills.
+ * Un tap insère le terme (retap = retire), la saisie libre reste reine.
+ * Pills actives = coral.
  */
 export function SmartNoteField({
   value,
@@ -52,17 +52,17 @@ export function SmartNoteField({
   onSubmit,
 }: Props) {
   const fieldClass =
-    "w-full px-4 py-3 bg-background text-on-background border-2 border-on-background font-mono text-sm rounded-none focus:outline-none focus:shadow-[4px_4px_0px_0px_currentColor] placeholder:opacity-40 transition-shadow";
+    "w-full rounded-2xl bg-surface-container-high px-4 py-3.5 text-sm font-semibold text-on-background placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-pop transition-shadow";
 
   return (
     <div className="flex flex-col gap-2.5">
       {label && (
-        <span className="font-mono text-xs tracking-widest uppercase opacity-60">
+        <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-on-surface-variant">
           {label}
         </span>
       )}
 
-      <div className="flex flex-col gap-1.5 -mx-5 px-5">
+      <div className="-mx-5 flex flex-col gap-1.5 px-5">
         {chips.map((row, i) => (
           <div key={i} className="flex gap-1.5 overflow-x-auto hide-scrollbar">
             {row.map((term) => {
@@ -76,10 +76,10 @@ export function SmartNoteField({
                     onChange(toggleTerm(value, term));
                   }}
                   className={clsx(
-                    "shrink-0 rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-wider transition-all duration-150 active:scale-95",
+                    "shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-bold transition-all duration-150 active:scale-95",
                     active
-                      ? "select-pop bg-on-background text-background border-on-background font-bold"
-                      : "bg-background text-on-background/60 border-on-background/40 hover:border-on-background hover:text-on-background",
+                      ? "select-pop bg-pop text-on-pop"
+                      : "bg-surface-container-high text-on-surface-variant hover:text-on-background",
                   )}
                 >
                   {term}

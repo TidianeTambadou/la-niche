@@ -55,14 +55,14 @@ export function ProfileScreen() {
         <Link
           href="/"
           aria-label="Retour"
-          className="shrink-0 w-9 h-9 border-2 border-on-background flex items-center justify-center active:scale-95 transition-transform"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-container-low active:scale-95 transition-transform"
         >
           <Icon name="arrow_back" size={17} />
         </Link>
       </div>
 
       {/* ─── Fluidité du mannequin ─── */}
-      <section className="flex flex-col gap-4 border-2 border-on-background p-5">
+      <section className="flex flex-col gap-4 rounded-[26px] bg-surface-container-low p-5">
         <SectionLabel>Fluidité du mannequin</SectionLabel>
         <MannequinSettingsPanel />
       </section>
@@ -78,9 +78,9 @@ export function ProfileScreen() {
             {topZones.map(([zone, count], i) => (
               <li
                 key={zone}
-                className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-widest"
+                className="flex items-center gap-3 rounded-2xl bg-surface-container-low px-4 py-3 text-[12px] font-bold uppercase tracking-wider"
               >
-                <span className="opacity-40">0{i + 1}</span>
+                <span className="text-pop">0{i + 1}</span>
                 <span className="flex-1">{BODY_ZONE_LABELS[zone]}</span>
                 <span className="font-bold">×{count}</span>
               </li>
@@ -92,14 +92,14 @@ export function ProfileScreen() {
       <form action={signOut}>
         <button
           type="submit"
-          className="w-full font-sans font-semibold text-sm tracking-widest uppercase bg-background text-on-background border-2 border-on-background px-6 py-3.5 hover:bg-on-background hover:text-background transition-colors inline-flex items-center justify-center gap-2"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-surface-container-low px-6 py-4 text-[13px] font-extrabold uppercase tracking-wider text-pop active:scale-95 transition-transform"
         >
           <Icon name="logout" size={17} />
           Se déconnecter
         </button>
       </form>
 
-      <p className="text-center font-mono text-[9px] uppercase tracking-widest opacity-30">
+      <p className="text-center text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/50">
         LA NICHE · V0.2 · CARNET OLFACTIF
       </p>
     </div>

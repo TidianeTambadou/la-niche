@@ -1,15 +1,14 @@
 import type { AuthState } from "@/features/auth/application/actions";
 
 /**
- * Zone de feedback monochrome : bloc contrasté pour l'erreur,
- * bloc bordé pour le succès. Jamais de rouge (design system).
+ * Feedback Club : erreur en carte coral douce, succès en carte lime douce.
  */
 export function AuthMessage({ state }: { state: AuthState }) {
   if (state.error) {
     return (
       <p
         role="alert"
-        className="bubble-in bg-on-background text-background px-4 py-3 text-sm font-semibold"
+        className="bubble-in rounded-2xl bg-pop-soft px-4 py-3 text-sm font-bold text-pop"
       >
         {state.error}
       </p>
@@ -17,7 +16,7 @@ export function AuthMessage({ state }: { state: AuthState }) {
   }
   if (state.message) {
     return (
-      <p className="bubble-in border-2 border-on-background px-4 py-3 text-sm">
+      <p className="bubble-in rounded-2xl bg-lime-soft px-4 py-3 text-sm font-bold text-lime">
         {state.message}
       </p>
     );

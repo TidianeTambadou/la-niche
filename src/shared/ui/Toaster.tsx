@@ -53,10 +53,12 @@ export function Toaster() {
         <p
           key={t.id}
           className={clsx(
-            "bubble-in max-w-sm w-fit px-4 py-2.5 text-sm font-semibold border-2 border-on-background text-center",
+            "bubble-in w-fit max-w-sm rounded-full px-5 py-3 text-center text-sm font-bold",
             t.kind === "error"
-              ? "bg-on-background text-background"
-              : "bg-background text-on-background",
+              ? "bg-pop text-on-pop"
+              : t.kind === "success"
+                ? "bg-lime text-on-lime"
+                : "bg-surface-container-highest text-on-background",
           )}
         >
           {t.message}

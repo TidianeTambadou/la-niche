@@ -6,22 +6,22 @@ type Props = InputHTMLAttributes<HTMLInputElement> & {
 };
 
 /**
- * Champ de formulaire brutalist : label mono au-dessus, input à bordure
- * 2px, focus = ombre décalée pleine. Cf. design system §8.
+ * Champ Club : label bold discret, input arrondi sur carte sombre,
+ * focus = anneau coral.
  */
 export function AuthField({ label, name, ...rest }: Props) {
   return (
     <div className="flex flex-col gap-1.5">
       <label
         htmlFor={name}
-        className="font-mono text-xs tracking-widest uppercase opacity-60"
+        className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-on-surface-variant"
       >
         {label}
       </label>
       <input
         id={name}
         name={name}
-        className="w-full px-4 py-3 bg-background text-on-background border-2 border-on-background font-mono text-sm rounded-none focus:outline-none focus:shadow-[4px_4px_0px_0px_currentColor] placeholder:opacity-40 transition-shadow"
+        className="w-full rounded-2xl bg-surface-container-low px-4 py-3.5 text-sm font-semibold text-on-background placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-pop transition-shadow"
         {...rest}
       />
     </div>

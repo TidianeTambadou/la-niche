@@ -24,11 +24,11 @@ export function SessionLegend({ entries, activePerfume, onSelect }: Props) {
   if (entries.length === 0) return null;
 
   return (
-    <div className="px-5 flex flex-col gap-1.5">
-      <span className="font-mono text-[9px] uppercase tracking-[0.3em] opacity-40">
-        Schéma de la session
+    <div className="px-5 flex flex-col gap-2">
+      <span className="text-[10px] font-extrabold uppercase tracking-[0.14em] text-on-surface-variant">
+        Ta session
       </span>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-wrap gap-2">
         {entries.map((entry, i) => {
           const active = activePerfume === entry.perfumeName;
           return (
@@ -40,19 +40,21 @@ export function SessionLegend({ entries, activePerfume, onSelect }: Props) {
                 onSelect(entry);
               }}
               className={clsx(
-                "reveal-fade-in inline-flex items-center gap-2 border-2 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all duration-150 active:scale-95 bg-background",
-                active ? "border-on-background" : "border-on-background/30",
+                "reveal-fade-in inline-flex items-center gap-2 rounded-full px-4 py-2 text-[11px] font-extrabold transition-all duration-150 active:scale-95",
+                active
+                  ? "bg-surface-container-highest ring-2 ring-on-background/60"
+                  : "bg-surface-container-low",
               )}
               style={{ animationDelay: `${i * 60}ms` }}
             >
               <span
                 aria-hidden
-                className="w-3 h-3 rounded-full border border-background shrink-0"
+                className="h-3 w-3 shrink-0 rounded-full"
                 style={{ backgroundColor: entry.color }}
               />
-              <span className="truncate max-w-[130px]">{entry.perfumeName}</span>
+              <span className="max-w-[130px] truncate">{entry.perfumeName}</span>
               {entry.poseCount > 1 && (
-                <span className="opacity-50">×{entry.poseCount}</span>
+                <span className="text-on-surface-variant">×{entry.poseCount}</span>
               )}
             </button>
           );

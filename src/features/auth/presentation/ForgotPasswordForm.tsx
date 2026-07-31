@@ -30,10 +30,10 @@ export function ForgotPasswordForm() {
 
       <SubmitButton>Envoyer le lien →</SubmitButton>
 
-      <div className="text-center text-xs font-mono uppercase tracking-widest">
+      <div className="text-center text-[11px] font-bold">
         <Link
           href="/login"
-          className="opacity-60 hover:opacity-100 underline-offset-4 hover:underline"
+          className="text-on-surface-variant hover:text-pop transition-colors"
         >
           ← Retour à la connexion
         </Link>

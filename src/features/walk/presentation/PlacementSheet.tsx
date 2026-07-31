@@ -151,9 +151,9 @@ export function PlacementSheet({
               ref={previewRef}
               src={previewUrl}
               alt="Flacon photographié"
-              className="w-full h-44 object-cover border-2 border-on-background"
+              className="h-44 w-full rounded-[22px] object-cover"
             />
-            <span className="absolute bottom-2 right-2 px-2.5 py-1 bg-background/95 border border-outline-variant font-mono text-[9px] uppercase tracking-widest flex items-center gap-1.5">
+            <span className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-white backdrop-blur">
               {uploading ? (
                 <>
                   <Icon name="progress_activity" size={11} className="refresh-spinning" />
@@ -172,19 +172,19 @@ export function PlacementSheet({
             <button
               type="button"
               onClick={() => fileRef.current?.click()}
-              className="press-cta w-full h-24 bg-on-background text-background border-2 border-on-background shadow-[4px_4px_0px_0px_currentColor] flex flex-col items-center justify-center gap-1.5"
+              className="flex h-24 w-full flex-col items-center justify-center gap-1.5 rounded-[22px] bg-pop text-on-pop active:scale-[0.98] transition-transform"
             >
               <Icon name="photo_camera" size={26} />
-              <span className="font-sans font-semibold text-xs tracking-widest uppercase">
-                Photographier le flacon
+              <span className="text-xs font-extrabold uppercase tracking-wider">
+                Shoote le flacon
               </span>
             </button>
             <button
               type="button"
               onClick={() => galleryRef.current?.click()}
-              className="self-center font-mono text-[10px] uppercase tracking-widest opacity-60 hover:opacity-100 underline-offset-4 hover:underline inline-flex items-center gap-1.5"
+              className="inline-flex items-center gap-1.5 self-center text-[11px] font-bold text-on-surface-variant hover:text-on-background transition-colors"
             >
-              <Icon name="photo_library" size={13} />
+              <Icon name="photo_library" size={14} />
               Choisir dans la photothèque
             </button>
           </div>
@@ -194,7 +194,7 @@ export function PlacementSheet({
       {/* 2. LE PARFUM — pré-rempli, recherché ou saisi. */}
       <div className="card-section mt-5">
         {activePerfume ? (
-          <div className="flex items-center justify-between border-2 border-on-background px-4 py-3">
+          <div className="flex items-center justify-between rounded-2xl bg-surface-container-high px-4 py-3">
             <div className="min-w-0 flex items-center gap-2.5">
               {/* La couleur que ce parfum portera sur le mannequin. */}
               <span
@@ -212,7 +212,7 @@ export function PlacementSheet({
                 {activePerfume.name}
               </p>
               {activePerfume.house && (
-                <p className="font-cormorant italic text-sm opacity-60 truncate">
+                <p className="truncate text-xs font-medium text-on-surface-variant">
                   {activePerfume.house}
                 </p>
               )}
@@ -225,28 +225,28 @@ export function PlacementSheet({
                 setQuery("");
               }}
               aria-label="Changer de parfum"
-              className="shrink-0 w-8 h-8 border-2 border-on-background flex items-center justify-center active:scale-95 transition-transform"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container-highest active:scale-95 transition-transform"
             >
               <Icon name="close" size={15} />
             </button>
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            <label className="font-mono text-xs tracking-widest uppercase opacity-60">
+            <label className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-on-surface-variant">
               Quel parfum ?
             </label>
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Recherche wishlist ou saisie libre…"
-              className="w-full px-4 py-3 bg-background text-on-background border-2 border-on-background font-mono text-sm rounded-none focus:outline-none focus:shadow-[4px_4px_0px_0px_currentColor] placeholder:opacity-40 transition-shadow"
+              className="w-full rounded-2xl bg-surface-container-high px-4 py-3.5 text-sm font-semibold placeholder:text-on-surface-variant/50 focus:outline-none focus:ring-2 focus:ring-pop transition-shadow"
             />
             {freeName && suggestions.length === 0 && (
-              <span className="bubble-in inline-flex items-center gap-2 font-mono text-[9px] uppercase tracking-widest opacity-70">
+              <span className="bubble-in inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
                 Sa couleur sur le corps
                 <span
                   aria-hidden
-                  className="w-3 h-3 rounded-full"
+                  className="h-3 w-3 rounded-full"
                   style={{
                     backgroundColor: upcomingColor(sessionColors, freeName),
                   }}
@@ -254,19 +254,19 @@ export function PlacementSheet({
               </span>
             )}
             {suggestions.length > 0 && (
-              <ul className="border-2 border-on-background divide-y-2 divide-on-background">
+              <ul className="overflow-hidden rounded-2xl bg-surface-container-high divide-y divide-surface-container-highest">
                 {suggestions.map((s) => (
                   <li key={s.id}>
                     <button
                       type="button"
                       onClick={() => setSelected(s)}
-                      className="w-full text-left px-4 py-2.5 hover:bg-on-background hover:text-background transition-colors flex items-baseline justify-between gap-3"
+                      className="flex w-full items-baseline justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-container-highest"
                     >
-                      <span className="font-sans font-bold text-sm truncate">
+                      <span className="truncate text-sm font-bold">
                         {s.name}
                       </span>
                       {s.house && (
-                        <span className="font-mono text-[10px] uppercase tracking-widest opacity-60 shrink-0">
+                        <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
                           {s.house}
                         </span>
                       )}
@@ -295,12 +295,11 @@ export function PlacementSheet({
           onClick={confirm}
           disabled={!canConfirm}
           className={clsx(
-            "press-cta w-full font-sans font-semibold text-sm tracking-widest uppercase border-2 border-on-background px-6 py-4",
-            "bg-on-background text-background shadow-[4px_4px_0px_0px_currentColor]",
-            "disabled:opacity-40 disabled:cursor-not-allowed",
+            "w-full rounded-full bg-on-background px-6 py-4 text-[13px] font-extrabold uppercase tracking-wider text-on-primary",
+            "active:scale-95 transition-transform disabled:opacity-40 disabled:cursor-not-allowed",
           )}
         >
-          {busy ? "Enregistrement…" : "Poser le parfum ici →"}
+          {busy ? "Enregistrement…" : "Pose-le →"}
         </button>
       </div>
 

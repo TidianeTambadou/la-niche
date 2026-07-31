@@ -64,17 +64,17 @@ export function QuickAddBar({ onAdd }: Props) {
 
   return (
     <div className="flex items-stretch gap-2">
-      <div className="flex-1 flex items-stretch border-2 border-on-background focus-within:shadow-[4px_4px_0px_0px_currentColor] transition-shadow bg-background">
+      <div className="flex flex-1 items-stretch rounded-2xl bg-surface-container-low focus-within:ring-2 focus-within:ring-pop transition-shadow">
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
           placeholder="Nom du parfum…"
           aria-label="Nom du parfum"
-          className="flex-1 min-w-0 px-4 py-3 bg-transparent font-mono text-sm focus:outline-none placeholder:opacity-40"
+          className="min-w-0 flex-1 bg-transparent px-4 py-3.5 text-sm font-semibold focus:outline-none placeholder:text-on-surface-variant/50"
         />
         {pendingPhoto && (
-          <span className="flex items-center pr-2 text-on-background/60">
+          <span className="flex items-center pr-3 text-lime">
             <Icon name="photo_camera" size={16} filled />
           </span>
         )}
@@ -85,7 +85,7 @@ export function QuickAddBar({ onAdd }: Props) {
         aria-label="Ajouter une photo (galerie ou appareil)"
         onClick={() => fileRef.current?.click()}
         disabled={busy}
-        className="w-12 border-2 border-on-background flex items-center justify-center active:scale-95 transition-transform disabled:opacity-50"
+        className="flex w-12 items-center justify-center rounded-2xl bg-surface-container-low active:scale-95 transition-transform disabled:opacity-50"
       >
         <Icon name="photo_camera" size={20} />
       </button>
@@ -95,7 +95,7 @@ export function QuickAddBar({ onAdd }: Props) {
         aria-label="Ajouter"
         onClick={submit}
         disabled={busy || !name.trim()}
-        className="press-cta w-12 bg-on-background text-background border-2 border-on-background shadow-[4px_4px_0px_0px_currentColor] flex items-center justify-center disabled:opacity-40"
+        className="flex w-12 items-center justify-center rounded-2xl bg-pop text-on-pop active:scale-95 transition-transform disabled:opacity-40"
       >
         {busy ? (
           <Icon name="progress_activity" size={20} className="refresh-spinning" />

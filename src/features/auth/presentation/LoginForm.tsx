@@ -35,16 +35,16 @@ export function LoginForm() {
 
       <SubmitButton>Entrer →</SubmitButton>
 
-      <div className="flex items-center justify-between text-xs font-mono uppercase tracking-widest">
+      <div className="flex items-center justify-between text-[11px] font-bold">
         <Link
           href="/mot-de-passe-oublie"
-          className="opacity-60 hover:opacity-100 underline-offset-4 hover:underline"
+          className="text-on-surface-variant hover:text-pop transition-colors"
         >
           Mot de passe oublié
         </Link>
         <Link
           href="/inscription"
-          className="opacity-60 hover:opacity-100 underline-offset-4 hover:underline"
+          className="text-on-surface-variant hover:text-pop transition-colors"
         >
           Créer un compte
         </Link>

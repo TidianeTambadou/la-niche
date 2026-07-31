@@ -1,13 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ScreenHero } from "@/shared/ui/ScreenHero";
-import { HomeSillage } from "./HomeSillage";
+import { clsx } from "clsx";
+import { Icon } from "@/shared/ui/Icon";
+import { createClient } from "@/shared/lib/supabase/client";
 import type { Walk } from "@/features/walk/domain/walk";
 import type { WishlistItem } from "@/features/wishlist/domain/wishlist-item";
 import {
   getActiveWalk,
   listApplications,
+  listWalks,
   startWalk,
   type ApplicationWithInsights,
 } from "@/features/walk/infrastructure/walk-repository";
@@ -26,19 +28,31 @@ type State =
       applications: ApplicationWithInsights[];
     };
 
+const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 } as const;
+
+/** Balades des 7 derniers jours (streak hebdo, max 5 barres). */
+function walksThisWeek(walks: Walk[]): number {
+  const weekAgo = Date.now() - 7 * 24 * 3600 * 1000;
+  return walks.filter((w) => new Date(w.startedAt).getTime() >= weekAgo).length;
+}
+
 /**
- * Hub Balade : session active si elle existe, sinon hero contemplatif —
- * mannequin qui respire (`daily-float`) + démarrage en un seul geste.
+ * Home Club : salutation, carte hero coral qui met la patate, stats +
+ * streak, rappel du parfum prioritaire. Le mannequin n'apparaît qu'en
+ * session — la home reste ultra-légère.
  */
 export function BaladeScreen() {
   const [state, setState] = useState<State>({ phase: "loading" });
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [starting, setStarting] = useState(false);
-  /** Brief d'avant-balade, affiché juste après le démarrage. */
   const [showBrief, setShowBrief] = useState(false);
+  const [firstName, setFirstName] = useState<string>("");
+  const [stats, setStats] = useState<{ poses: number; week: number }>({
+    poses: 0,
+    week: 0,
+  });
 
-  /** Synchrone et sans setState direct : tout se joue dans les .then —
-   *  compatible avec la règle `react-hooks/set-state-in-effect`. */
+  /** Synchrone et sans setState direct : tout se joue dans les .then. */
   const load = useCallback(() => {
     Promise.all([getActiveWalk(), listWishlist()])
       .then(async ([walk, wl]) => {
@@ -51,6 +65,21 @@ export function BaladeScreen() {
         }
       })
       .catch(() => setState({ phase: "idle" }));
+
+    // Stats de la home (non bloquantes).
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      const dn = (user?.user_metadata?.display_name as string | undefined) ?? "";
+      setFirstName(dn.split(" ")[0] ?? "");
+    });
+    listWalks()
+      .then(async (walks) => {
+        const { count } = await createClient()
+          .from("walk_applications")
+          .select("id", { count: "exact", head: true });
+        setStats({ poses: count ?? 0, week: walksThisWeek(walks) });
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -58,8 +87,7 @@ export function BaladeScreen() {
   }, [load]);
 
   // Préchargement discret du module 3D + du GLB pendant que l'utilisateur
-  // contemple la home : le mannequin apparaît instantanément au démarrage
-  // de la balade, sans avoir coûté un octet au premier paint.
+  // est sur la home : le mannequin apparaît instantanément en session.
   useEffect(() => {
     const id = setTimeout(() => {
       import("@/features/mannequin/presentation/BodySilhouette3D");
@@ -87,12 +115,13 @@ export function BaladeScreen() {
 
   if (state.phase === "loading") {
     return (
-      <div className="flex flex-col gap-5" aria-busy>
-        <div className="shimmer-bar h-10 w-2/3 border-2 border-on-background/10" />
-        <div
-          className="shimmer-bar w-full max-w-[380px] mx-auto border-2 border-on-background/10"
-          style={{ aspectRatio: "3 / 4" }}
-        />
+      <div className="flex flex-col gap-4" aria-busy>
+        <div className="shimmer-bar h-8 w-1/2 rounded-full" />
+        <div className="shimmer-bar h-52 rounded-[26px]" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="shimmer-bar h-28 rounded-[22px]" />
+          <div className="shimmer-bar h-28 rounded-[22px]" />
+        </div>
       </div>
     );
   }
@@ -116,30 +145,91 @@ export function BaladeScreen() {
     );
   }
 
+  const toSmell = wishlist.filter((w) => w.status === "to_smell");
+  const topPick = [...toSmell].sort(
+    (a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority],
+  )[0];
+
   return (
-    <div className="flex flex-col gap-6">
-      <ScreenHero
-        label="Nouvelle session"
-        titleLines={["Balade", "Olfactive"]}
-        quote="« Entre en parfumerie, ouvre une session, et laisse ta peau se souvenir pour toi. »"
-      />
+    <div className="flex flex-col gap-4">
+      <p className="hero-label text-[15px] font-semibold text-on-surface-variant normal-case tracking-normal">
+        Yo{firstName ? " " : ""}
+        <b className="text-on-background">{firstName}</b> 👋 prêt à sentir ?
+      </p>
 
-      <HomeSillage />
-
-      <button
-        type="button"
-        onClick={handleStart}
-        disabled={starting}
-        className="press-cta w-full max-w-[380px] mx-auto font-sans font-semibold text-sm tracking-widest uppercase bg-on-background text-background border-2 border-on-background px-6 py-4 shadow-[6px_6px_0px_0px_currentColor] disabled:opacity-60"
-      >
-        {starting ? "Ouverture…" : "Commencer la balade →"}
-      </button>
-
-      {wishlist.length > 0 && (
-        <p className="text-center font-mono text-[10px] uppercase tracking-widest opacity-40">
-          {wishlist.length} parfum{wishlist.length > 1 ? "s" : ""} en wishlist
-          à tester
+      {/* ─── Hero coral ─── */}
+      <div className="hero-line-1 relative overflow-hidden rounded-[26px] bg-gradient-to-br from-pop to-pop-strong p-6">
+        <span aria-hidden className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/15" />
+        <span aria-hidden className="absolute right-10 top-24 w-16 h-16 rounded-full bg-white/10" />
+        <h1 className="title-mega text-[44px] text-white">
+          Balade
+          <br />
+          Olfactive
+        </h1>
+        <p className="mt-2.5 text-[13px] font-semibold text-white/85">
+          {toSmell.length > 0
+            ? `${toSmell.length} parfum${toSmell.length > 1 ? "s" : ""} t'attend${toSmell.length > 1 ? "ent" : ""} dans ta wishlist`
+            : "Ta peau est prête, la boutique t'attend"}
         </p>
+        <button
+          type="button"
+          onClick={handleStart}
+          disabled={starting}
+          className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 text-[13px] font-extrabold uppercase tracking-wider text-pop-strong active:scale-95 transition-transform disabled:opacity-60"
+        >
+          {starting ? "Ouverture…" : "Let's go →"}
+        </button>
+      </div>
+
+      {/* ─── Stats ─── */}
+      <div className="hero-line-2 grid grid-cols-2 gap-3">
+        <div className="rounded-[22px] bg-surface-container-low p-4">
+          <div className="title-mega text-4xl text-pop">{stats.poses}</div>
+          <div className="mt-1.5 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+            Parfums posés
+          </div>
+        </div>
+        <div className="rounded-[22px] bg-surface-container-low p-4">
+          <div className="title-mega text-4xl">
+            {stats.week}
+            <span className="text-lg">/sem</span>
+          </div>
+          <div className="mt-1.5 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
+            Streak balades
+          </div>
+          <div className="mt-2.5 flex gap-1.5">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <span
+                key={i}
+                className={clsx(
+                  "h-1.5 flex-1 rounded-full",
+                  i < Math.min(stats.week, 5)
+                    ? "bg-lime"
+                    : "bg-surface-container-highest",
+                )}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Rappel prioritaire ─── */}
+      {topPick && (
+        <div className="hero-quote flex items-center gap-3.5 rounded-[22px] bg-surface-container-low p-4">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pop-soft text-pop">
+            <Icon name="favorite" size={20} filled />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold">
+              {topPick.name} est toujours là
+            </p>
+            <p className="truncate text-xs font-medium text-on-surface-variant">
+              {topPick.priority === "high" ? "Priorité haute · " : ""}à sentir
+              {topPick.house ? ` · ${topPick.house}` : ""}
+            </p>
+          </div>
+          <span className="font-extrabold text-pop">→</span>
+        </div>
       )}
     </div>
   );

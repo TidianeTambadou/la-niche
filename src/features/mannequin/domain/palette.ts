@@ -8,14 +8,14 @@
  */
 
 export const OLFACTORY_PALETTE = [
-  { name: "ambre", hex: "#C8893B" },
-  { name: "rose", hex: "#C4566E" },
-  { name: "vétiver", hex: "#5E7A52" },
-  { name: "encens", hex: "#7561B3" },
-  { name: "marine", hex: "#3E6E8E" },
-  { name: "safran", hex: "#C2452D" },
-  { name: "miel", hex: "#B89B2E" },
-  { name: "iris", hex: "#8A7CA8" },
+  { name: "coral", hex: "#FF4D5A" },
+  { name: "lime", hex: "#D4F24B" },
+  { name: "cyan", hex: "#4DD8FF" },
+  { name: "violet", hex: "#B784FF" },
+  { name: "mangue", hex: "#FF9F45" },
+  { name: "bubblegum", hex: "#FF6FB3" },
+  { name: "menthe", hex: "#59E6A8" },
+  { name: "citron", hex: "#FFD84D" },
 ] as const;
 
 export function perfumeColor(index: number): string {

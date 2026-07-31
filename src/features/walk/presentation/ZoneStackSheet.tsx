@@ -20,7 +20,7 @@ import type {
 const VERDICT_CYCLE: (Verdict | null)[] = [null, "loved", "maybe", "no"];
 
 const VERDICT_META: Record<Verdict, { icon: string; label: string }> = {
-  loved: { icon: "favorite", label: "Coup de cœur" },
+  loved: { icon: "favorite", label: "Banger" },
   maybe: { icon: "contrast", label: "À revoir" },
   no: { icon: "close", label: "Pas pour moi" },
 };
@@ -136,10 +136,8 @@ export function ZoneStackSheet({
               }
               aria-label={`${app.perfumeName}, pose ${stack.length - i}/${stack.length}`}
               className={clsx(
-                "stack-card absolute inset-x-0 top-0 text-left bg-background border-2 border-on-background p-4 flex gap-4",
-                offset === 0
-                  ? "shadow-[6px_6px_0px_0px_currentColor] z-30"
-                  : "z-20",
+                "stack-card absolute inset-x-0 top-0 text-left rounded-[22px] bg-surface-container-high p-4 flex gap-4",
+                offset === 0 ? "z-30" : "z-20",
               )}
               style={{
                 transform:
@@ -160,19 +158,19 @@ export function ZoneStackSheet({
                 className="w-[104px] h-[104px] shrink-0"
               />
               <div className="min-w-0 flex-1 flex flex-col">
-                <span className="font-mono text-[9px] uppercase tracking-widest opacity-40">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
                   {timeOf(app.appliedAt)} · Pose {stack.length - i}/{stack.length}
                 </span>
-                <span className="font-sans font-bold text-base tracking-tight truncate mt-0.5">
+                <span className="text-base font-extrabold tracking-tight truncate mt-0.5">
                   {app.perfumeName}
                 </span>
                 {app.perfumeHouse && (
-                  <span className="font-cormorant italic text-sm opacity-60 truncate">
+                  <span className="text-xs font-medium text-on-surface-variant truncate">
                     {app.perfumeHouse}
                   </span>
                 )}
                 {app.note && (
-                  <span className="text-xs opacity-70 mt-1 line-clamp-2">
+                  <span className="text-xs text-on-surface-variant mt-1 line-clamp-2">
                     {app.note}
                   </span>
                 )}
@@ -190,11 +188,11 @@ export function ZoneStackSheet({
             aria-label="Pose précédente"
             onClick={() => setIndex((i) => Math.max(0, i - 1))}
             disabled={index === 0}
-            className="w-9 h-9 border-2 border-on-background flex items-center justify-center active:scale-95 transition-transform disabled:opacity-30"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-high active:scale-95 transition-transform disabled:opacity-30"
           >
             <Icon name="arrow_upward" size={16} />
           </button>
-          <span className="font-mono text-[10px] uppercase tracking-widest opacity-60">
+          <span className="text-[11px] font-extrabold uppercase tracking-wider text-on-surface-variant">
             {index + 1} / {stack.length}
           </span>
           <button
@@ -202,7 +200,7 @@ export function ZoneStackSheet({
             aria-label="Pose suivante"
             onClick={() => setIndex((i) => Math.min(stack.length - 1, i + 1))}
             disabled={index === stack.length - 1}
-            className="w-9 h-9 border-2 border-on-background flex items-center justify-center active:scale-95 transition-transform disabled:opacity-30"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-high active:scale-95 transition-transform disabled:opacity-30"
           >
             <Icon name="arrow_downward" size={16} />
           </button>
@@ -210,8 +208,8 @@ export function ZoneStackSheet({
       )}
 
       {/* ─── Verdict ─── */}
-      <div className="mt-6 flex items-center justify-between border-t-2 border-on-background pt-4">
-        <span className="font-mono text-xs uppercase tracking-widest opacity-60 inline-flex items-center gap-3">
+      <div className="mt-6 flex items-center justify-between border-t border-surface-container-highest pt-4">
+        <span className="inline-flex items-center gap-3 text-[11px] font-extrabold uppercase tracking-[0.14em] text-on-surface-variant">
           Verdict
           {!readOnly && onDeleteApplication && (
             <button
@@ -222,7 +220,7 @@ export function ZoneStackSheet({
                 setIndex(0);
                 await onDeleteApplication(target);
               }}
-              className="w-7 h-7 border border-on-background/40 hover:border-on-background flex items-center justify-center active:scale-95 transition-all opacity-70 hover:opacity-100"
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-container-high active:scale-95 transition-transform"
             >
               <Icon name="delete" size={13} />
             </button>
@@ -233,10 +231,10 @@ export function ZoneStackSheet({
           onClick={cycleVerdict}
           disabled={readOnly}
           className={clsx(
-            "rounded-full border-2 border-on-background px-4 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest inline-flex items-center gap-2 transition-all duration-150 active:scale-95",
+            "rounded-full px-4 py-2 text-[11px] font-extrabold uppercase tracking-wider inline-flex items-center gap-2 transition-all duration-150 active:scale-95",
             current.verdict
-              ? "bg-on-background text-background"
-              : "bg-background text-on-background/50",
+              ? "bg-pop text-on-pop"
+              : "bg-surface-container-high text-on-surface-variant",
           )}
         >
           {current.verdict ? (
@@ -257,7 +255,7 @@ export function ZoneStackSheet({
 
       {/* ─── Drydown : impressions horodatées ─── */}
       <div className="mt-5">
-        <span className="font-mono text-xs uppercase tracking-widest opacity-60">
+        <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-on-surface-variant">
           Évolution — {current.impressions.length} impression
           {current.impressions.length > 1 ? "s" : ""}
         </span>
@@ -266,8 +264,8 @@ export function ZoneStackSheet({
           <ul className="mt-3 flex flex-col gap-2.5">
             {current.impressions.map((imp, i) => (
               <li key={i} className="bubble-in flex items-baseline gap-3 pl-3 relative">
-                <span className="absolute left-0 top-0 bottom-0 w-[2px] bg-on-background/30" />
-                <span className="font-mono text-[9px] font-bold uppercase tracking-widest opacity-50 shrink-0">
+                <span className="absolute left-0 top-0 bottom-0 w-[3px] rounded-full bg-pop/50" />
+                <span className="shrink-0 text-[10px] font-extrabold uppercase tracking-wider text-lime">
                   {sinceApplied(current.appliedAt, imp.at)}
                 </span>
                 <span className="text-sm">{imp.text}</span>
@@ -289,7 +287,7 @@ export function ZoneStackSheet({
               type="button"
               onClick={submitImpression}
               disabled={busy || !impression.trim()}
-              className="press-cta self-end px-5 py-2.5 bg-on-background text-background border-2 border-on-background shadow-[3px_3px_0px_0px_currentColor] font-mono text-[10px] font-bold uppercase tracking-widest inline-flex items-center gap-2 disabled:opacity-40"
+              className="inline-flex items-center gap-2 self-end rounded-full bg-lime px-5 py-2.5 text-[11px] font-extrabold uppercase tracking-wider text-on-lime active:scale-95 transition-transform disabled:opacity-40"
             >
               <Icon name="add" size={15} />
               Horodater

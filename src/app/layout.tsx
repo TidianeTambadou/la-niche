@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, JetBrains_Mono, Cormorant_Garamond } from "next/font/google";
+import { Anton, Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/shared/ui/ThemeProvider";
 import { Toaster } from "@/shared/ui/Toaster";
 import "./globals.css";
@@ -16,11 +16,12 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
+/** Typo condensée signature de la DA Club — équivalent cross-platform
+ *  de Futura Condensed ExtraBold. */
+const anton = Anton({
+  variable: "--font-anton",
   subsets: ["latin"],
-  weight: ["400", "500"],
-  style: ["italic"],
+  weight: "400",
   display: "swap",
 });
 
@@ -41,10 +42,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
-  ],
+  // Thème unique : sombre. Pas de variante claire.
+  themeColor: "#121214",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -61,7 +60,7 @@ export default function RootLayout({
     <html
       lang="fr"
       suppressHydrationWarning
-      className={`${inter.variable} ${jetbrainsMono.variable} ${cormorant.variable} h-full antialiased`}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${anton.variable} h-full antialiased`}
     >
       <head>
         {/* eslint-disable-next-line @next/next/no-page-custom-font -- App Router : le root layout couvre toutes les pages, la règle vise le Pages Router */}
@@ -71,7 +70,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-[100dvh] bg-background text-on-background flex flex-col">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <ThemeProvider attribute="class" forcedTheme="dark" defaultTheme="dark" enableSystem={false}>
           {children}
           <Toaster />
         </ThemeProvider>

@@ -16,7 +16,7 @@ export const LazyBodySilhouette3D = dynamic(
     ssr: false,
     loading: () => (
       <div
-        className="relative w-full max-w-[380px] mx-auto shimmer-bar border-2 border-on-background/10"
+        className="shimmer-bar relative mx-auto w-full max-w-[380px] rounded-[26px]"
         style={{ aspectRatio: "3 / 4" }}
         aria-busy
       />

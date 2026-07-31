@@ -17,9 +17,8 @@ function formatElapsed(startedAt: string): string {
 }
 
 /**
- * Chronomètre de session — digits odomètre qui roulent chaque seconde.
- * Isolé dans son propre composant : le tick ne re-rend jamais le parent
- * (ni le canvas 3D).
+ * Chronomètre de session — digits odomètre lime, badge LIVE coral.
+ * Isolé : le tick ne re-rend jamais le parent (ni le canvas 3D).
  */
 export function WalkChrono({ startedAt }: { startedAt: string }) {
   const [value, setValue] = useState(() => formatElapsed(startedAt));
@@ -31,13 +30,14 @@ export function WalkChrono({ startedAt }: { startedAt: string }) {
 
   return (
     <span className="inline-flex items-center gap-2.5">
-      <span className="relative inline-flex w-2 h-2">
-        <span className="live-pulse absolute inset-0 rounded-full bg-on-background" />
+      <span className="inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-[0.14em] text-on-surface-variant">
+        <span className="live-pulse inline-block h-2 w-2 rounded-full bg-pop" />
+        Live
       </span>
       <TimeTicker
         value={value}
         label="Durée de la balade"
-        className="font-mono font-bold text-lg tracking-widest tabular-nums"
+        className="title-mega text-[22px] text-lime tabular-nums"
       />
     </span>
   );

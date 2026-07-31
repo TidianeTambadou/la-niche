@@ -327,25 +327,25 @@ export function ActiveWalk({
 
   return (
     <div className="flex flex-col gap-4 -mx-5">
-      {/* ─── Bandeau session ─── */}
-      <div className="flex items-center justify-between px-5">
+      {/* ─── Barre live ─── */}
+      <div className="mx-5 flex items-center justify-between rounded-full bg-surface-container-low px-4 py-2.5">
         <WalkChrono startedAt={walk.startedAt} />
         <div className="flex items-center gap-2">
           <button
             type="button"
             aria-label="Réglages du mannequin"
             onClick={() => setSettingsOpen(true)}
-            className="w-8 h-8 rounded-full border-2 border-on-background/40 hover:border-on-background flex items-center justify-center active:scale-95 transition-all"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-high active:scale-95 transition-transform"
           >
-            <Icon name="tune" size={15} />
+            <Icon name="tune" size={16} />
           </button>
           <button
             type="button"
             onClick={handleEnd}
             disabled={endBusy}
-            className="rounded-full border-2 border-on-background px-4 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest active:scale-95 transition-all hover:bg-on-background hover:text-background disabled:opacity-50"
+            className="rounded-full bg-pop px-5 py-2 text-[11px] font-extrabold uppercase tracking-wider text-on-pop active:scale-95 transition-transform disabled:opacity-50"
           >
-            Terminer
+            Stop
           </button>
         </div>
       </div>
@@ -361,10 +361,10 @@ export function ActiveWalk({
                 type="button"
                 onClick={() => setPreselected(active ? null : item)}
                 className={clsx(
-                  "shrink-0 rounded-full border-2 border-on-background px-3.5 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest transition-all duration-150 active:scale-95 inline-flex items-center gap-1.5",
+                  "shrink-0 rounded-full px-4 py-2 text-[11px] font-extrabold uppercase tracking-wider transition-all duration-150 active:scale-95 inline-flex items-center gap-1.5",
                   active
-                    ? "bg-on-background text-background"
-                    : "bg-background text-on-background/70",
+                    ? "bg-pop text-on-pop"
+                    : "bg-surface-container-low text-on-surface-variant",
                 )}
               >
                 {active && <Icon name="colorize" size={12} />}
@@ -376,14 +376,17 @@ export function ActiveWalk({
       )}
 
       {/* ─── Consigne contextuelle ─── */}
-      <p className="px-5 font-cormorant italic text-sm opacity-60 text-center">
+      <p className="px-5 text-center text-[13px] font-semibold text-on-surface-variant">
         {preselected
-          ? `« Touche la zone où tu poses ${preselected.name}. »`
-          : "« Touche le corps là où tu appliques le parfum. »"}
+          ? `Touche la zone où tu poses ${preselected.name}`
+          : "Tape une zone et shoote le flacon 📷"}
       </p>
 
-      {/* ─── Mannequin ─── */}
-      <div ref={mannequinRef} className="relative">
+      {/* ─── Mannequin (carte ronde) ─── */}
+      <div
+        ref={mannequinRef}
+        className="relative mx-5 overflow-hidden rounded-[26px] bg-surface-container-low"
+      >
         <LazyBodySilhouette3D
           placementMode
           filledMarkers={markers}
@@ -400,9 +403,9 @@ export function ActiveWalk({
               setLegendActive(null);
               setHighlighted(null);
             }}
-            className="bubble-in absolute top-2 right-2 px-3 py-1.5 bg-background/95 backdrop-blur border border-outline-variant text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5 active:scale-95 transition-transform z-10"
+            className="bubble-in absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-black/60 px-4 py-2 text-[11px] font-extrabold uppercase tracking-wider text-white backdrop-blur active:scale-95 transition-transform"
           >
-            <Icon name="zoom_out" size={12} />
+            <Icon name="zoom_out" size={13} />
             Vue d&apos;ensemble
           </button>
         )}
@@ -423,16 +426,16 @@ export function ActiveWalk({
               key={zone}
               type="button"
               onClick={() => setOpenZone(zone)}
-              className="shrink-0 border-2 border-on-background px-3.5 py-2 font-mono text-[10px] font-bold uppercase tracking-widest active:scale-95 transition-transform inline-flex items-center gap-2 bg-background"
+              className="shrink-0 inline-flex items-center gap-2 rounded-full bg-surface-container-low px-4 py-2.5 text-[11px] font-extrabold active:scale-95 transition-transform"
             >
               <span
                 aria-hidden
-                className="w-2.5 h-2.5 rounded-full shrink-0"
+                className="h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ backgroundColor: info.color }}
               />
               {BODY_ZONE_LABELS[zone]}
               {info.count > 1 && (
-                <span className="bg-on-background text-background px-1.5 py-0.5 text-[9px]">
+                <span className="rounded-full bg-surface-container-highest px-2 py-0.5 text-[10px] text-on-surface-variant">
                   ×{info.count}
                 </span>
               )}

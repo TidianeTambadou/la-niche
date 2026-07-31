@@ -82,7 +82,7 @@ export function WishlistCard({ item, onOpen, onCycleStatus }: Props) {
       <div
         aria-hidden
         className={clsx(
-          "absolute inset-0 flex items-center px-5 font-mono text-[10px] font-bold uppercase tracking-widest text-on-background/40 transition-opacity",
+          "absolute inset-0 flex items-center px-5 text-[11px] font-extrabold uppercase tracking-wider text-pop transition-opacity",
           Math.abs(dragX) > 12 ? "opacity-100" : "opacity-0",
           dragX > 0 ? "justify-start" : "justify-end",
         )}
@@ -99,8 +99,7 @@ export function WishlistCard({ item, onOpen, onCycleStatus }: Props) {
         onPointerCancel={onPointerUp}
         onKeyDown={(e) => e.key === "Enter" && onOpen(item)}
         className={clsx(
-          "relative bg-background border-2 border-on-background p-4 pl-5 flex items-center gap-4 cursor-pointer overflow-hidden",
-          "shadow-[4px_4px_0px_0px_currentColor]",
+          "relative flex cursor-pointer items-center gap-4 overflow-hidden rounded-[22px] bg-surface-container-low p-4",
           !dragging && "transition-transform duration-300",
         )}
         style={{
@@ -108,42 +107,42 @@ export function WishlistCard({ item, onOpen, onCycleStatus }: Props) {
           transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
         }}
       >
-        {/* Barre d'accent : priorité haute. */}
+        {/* Accent priorité haute. */}
         {item.priority === "high" && (
           <span
             aria-hidden
-            className="absolute left-0 top-0 bottom-0 w-[4px] bg-on-background"
+            className="absolute left-0 top-0 bottom-0 w-1.5 bg-pop"
           />
         )}
 
         <PhotoThumb
           path={item.photoPath}
           alt={item.name}
-          className="w-[72px] h-[72px] shrink-0"
+          className="h-[72px] w-[72px] shrink-0"
         />
 
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           {item.house && (
-            <p className="font-mono text-[9px] uppercase tracking-[0.25em] opacity-50 truncate">
+            <p className="truncate text-[10px] font-extrabold uppercase tracking-wider text-on-surface-variant">
               {item.house}
             </p>
           )}
-          <p className="font-sans font-bold text-[15px] tracking-tight truncate mt-0.5">
+          <p className="mt-0.5 truncate text-[16px] font-extrabold tracking-tight">
             {item.name}
           </p>
           {item.note && (
-            <p className="font-cormorant italic text-sm opacity-60 truncate mt-0.5">
-              « {item.note} »
+            <p className="mt-0.5 truncate text-xs font-medium text-on-surface-variant">
+              {item.note}
             </p>
           )}
-          <div className="mt-1.5">
+          <div className="mt-2">
             <PriorityDots priority={item.priority} />
           </div>
         </div>
 
         {/* Stamp après un swipe réussi. */}
         {stamped && (
-          <span className="stamp-in absolute right-4 top-1/2 -translate-y-1/2 border-[3px] border-on-background px-2 py-1 font-mono text-[10px] font-black uppercase tracking-widest bg-background">
+          <span className="stamp-in absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-lime px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-on-lime">
             {WISHLIST_STATUS_LABELS[stamped]}
           </span>
         )}

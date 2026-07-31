@@ -108,17 +108,17 @@ export function WishlistScreen() {
 
       <QuickAddBar onAdd={handleAdd} />
 
-      <div className="flex gap-2 overflow-x-auto hide-scrollbar -mx-5 px-5">
+      <div className="-mx-5 flex gap-2 overflow-x-auto px-5 hide-scrollbar">
         {FILTERS.map((f) => (
           <button
             key={f.value}
             type="button"
             onClick={() => setFilter(f.value)}
             className={clsx(
-              "shrink-0 rounded-full border-2 border-on-background px-4 py-1.5 font-mono text-[10px] font-bold uppercase tracking-widest transition-all duration-150 active:scale-95",
+              "shrink-0 rounded-full px-4 py-2 text-[11px] font-extrabold uppercase tracking-wider transition-all duration-150 active:scale-95",
               filter === f.value
-                ? "bg-on-background text-background"
-                : "bg-background text-on-background/60",
+                ? "bg-pop text-on-pop"
+                : "bg-surface-container-low text-on-surface-variant",
             )}
           >
             {f.label}
@@ -129,7 +129,7 @@ export function WishlistScreen() {
       {visible === null ? (
         <div className="flex flex-col gap-3" aria-busy>
           {[0, 1, 2].map((i) => (
-            <div key={i} className="shimmer-bar h-[104px] border-2 border-on-background/10" />
+            <div key={i} className="shimmer-bar h-[104px] rounded-[22px]" />
           ))}
         </div>
       ) : visible.length === 0 ? (

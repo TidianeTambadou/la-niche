@@ -18,9 +18,8 @@ type Props = {
 };
 
 /**
- * Bottom sheet clinique : backdrop 40 % + panneau qui monte du bas
- * (`sheet-slide-up`, 450ms, easing design system). Coins nets, bordure
- * 2px sur le dessus. Ferme au tap sur le backdrop ou sur ✕.
+ * Bottom sheet Club : carte sombre aux coins très arrondis qui monte avec
+ * un overshoot physique, poignée de drag, titre condensé.
  */
 export function BottomSheet({
   open,
@@ -48,34 +47,36 @@ export function BottomSheet({
         type="button"
         aria-label="Fermer"
         onClick={onClose}
-        className="backdrop-fade-in absolute inset-0 bg-on-background/40 cursor-default"
+        className="backdrop-fade-in absolute inset-0 bg-black/60 cursor-default"
       />
       <div
         role="dialog"
         aria-modal="true"
-        className="sheet-slide-up relative bg-background text-on-background border-t-2 border-on-background max-h-[88dvh] overflow-y-auto overscroll-contain"
+        className="sheet-slide-up relative bg-surface-container-low text-on-background rounded-t-[28px] max-h-[88dvh] overflow-y-auto overscroll-contain"
       >
-        <header className="sticky top-0 z-10 bg-background flex items-center justify-between gap-4 px-5 pt-4 pb-3 border-b-2 border-on-background">
+        {/* Poignée */}
+        <div className="sticky top-0 z-10 bg-surface-container-low pt-3 pb-1 flex justify-center">
+          <span aria-hidden className="w-10 h-1.5 rounded-full bg-surface-container-highest" />
+        </div>
+        <header className="flex items-center justify-between gap-4 px-5 pb-3">
           <div className="flex flex-col gap-0.5 min-w-0">
             {label && <SectionLabel>{label}</SectionLabel>}
             {title && (
-              <h2 className="font-sans font-black text-xl tracking-tighter uppercase truncate">
-                {title}
-              </h2>
+              <h2 className="title-mega text-2xl truncate">{title}</h2>
             )}
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="shrink-0 w-9 h-9 border-2 border-on-background flex items-center justify-center active:scale-95 transition-transform"
+            className="shrink-0 w-9 h-9 rounded-full bg-surface-container-high flex items-center justify-center active:scale-95 transition-transform"
           >
             <Icon name="close" size={18} />
           </button>
         </header>
 
         <div
-          className={clsx("px-5 py-5 safe-bottom", stagger && "stagger-sheet")}
+          className={clsx("px-5 py-4 safe-bottom", stagger && "stagger-sheet")}
         >
           {children}
         </div>

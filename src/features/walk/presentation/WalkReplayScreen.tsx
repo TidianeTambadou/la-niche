@@ -121,9 +121,9 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
   if (!walk || applications === null || cursor === null) {
     return (
       <div className="flex flex-col gap-5" aria-busy>
-        <div className="shimmer-bar h-10 w-2/3 border-2 border-on-background/10" />
+        <div className="shimmer-bar h-10 w-2/3 rounded-full" />
         <div
-          className="shimmer-bar w-full max-w-[380px] mx-auto border-2 border-on-background/10"
+          className="shimmer-bar mx-auto w-full max-w-[380px] rounded-[26px]"
           style={{ aspectRatio: "3 / 4" }}
         />
       </div>
@@ -144,10 +144,10 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
               month: "long",
             })}
           </SectionLabel>
-          <h1 className="hero-line-1 font-sans font-black text-2xl tracking-tighter uppercase leading-none mt-1.5">
+          <h1 className="hero-line-1 title-mega text-3xl mt-1.5">
             {walk.title || "Balade"}
           </h1>
-          <p className="font-mono text-[10px] uppercase tracking-widest opacity-50 mt-1.5">
+          <p className="mt-1.5 text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
             {timeOf(walk.startedAt)}
             {walk.endedAt ? ` — ${timeOf(walk.endedAt)}` : " — en cours"} ·{" "}
             {total} pose{total > 1 ? "s" : ""}
@@ -158,14 +158,14 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
             type="button"
             aria-label="Supprimer la balade"
             onClick={() => setConfirmDelete(true)}
-            className="w-9 h-9 border-2 border-on-background/40 hover:border-on-background flex items-center justify-center active:scale-95 transition-all"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-low active:scale-95 transition-transform"
           >
             <Icon name="delete" size={16} />
           </button>
           <Link
             href="/journal"
             aria-label="Retour au journal"
-            className="w-9 h-9 border-2 border-on-background flex items-center justify-center active:scale-95 transition-transform"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-container-high active:scale-95 transition-transform"
           >
             <Icon name="arrow_back" size={17} />
           </Link>
@@ -181,11 +181,11 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
             onClick={() => setConfirmDelete(false)}
             className="backdrop-fade-in absolute inset-0 bg-on-background/50 cursor-default"
           />
-          <div className="bubble-in relative bg-background border-2 border-on-background p-6 max-w-xs w-full flex flex-col gap-4">
-            <p className="font-sans font-bold text-base tracking-tight">
+          <div className="bubble-in relative flex w-full max-w-xs flex-col gap-4 rounded-[26px] bg-surface-container-low p-6">
+            <p className="title-mega text-2xl">
               Supprimer cette balade ?
             </p>
-            <p className="text-sm opacity-70">
+            <p className="text-sm font-medium text-on-surface-variant">
               Les {total} pose{total > 1 ? "s" : ""}, photos et impressions
               seront définitivement effacées.
             </p>
@@ -207,14 +207,14 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
                     setDeleting(false);
                   }
                 }}
-                className="press-cta flex-1 font-sans font-semibold text-xs tracking-widest uppercase bg-on-background text-background border-2 border-on-background px-4 py-3 shadow-[3px_3px_0px_0px_currentColor] disabled:opacity-50"
+                className="flex-1 rounded-full bg-pop px-4 py-3 text-[12px] font-extrabold uppercase tracking-wider text-on-pop active:scale-95 transition-transform disabled:opacity-50"
               >
                 {deleting ? "…" : "Supprimer"}
               </button>
               <button
                 type="button"
                 onClick={() => setConfirmDelete(false)}
-                className="flex-1 font-sans font-semibold text-xs tracking-widest uppercase border-2 border-on-background px-4 py-3 hover:bg-on-background hover:text-background transition-colors"
+                className="flex-1 rounded-full bg-surface-container-high px-4 py-3 text-[12px] font-extrabold uppercase tracking-wider active:scale-95 transition-transform"
               >
                 Garder
               </button>
@@ -235,7 +235,7 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
           <button
             type="button"
             onClick={() => setFocused(null)}
-            className="bubble-in absolute top-2 right-2 px-3 py-1.5 bg-background/95 backdrop-blur border border-outline-variant text-[10px] uppercase tracking-widest font-bold flex items-center gap-1.5 active:scale-95 transition-transform z-10"
+            className="bubble-in absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-black/60 px-4 py-2 text-[11px] font-extrabold uppercase tracking-wider text-white backdrop-blur active:scale-95 transition-transform"
           >
             <Icon name="zoom_out" size={12} />
             Vue d&apos;ensemble
@@ -247,12 +247,12 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
       {total > 0 && (
         <div className="flex flex-col gap-1.5">
           <div className="flex items-baseline justify-between">
-            <span className="font-mono text-[10px] uppercase tracking-widest opacity-50">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-on-surface-variant">
               Rejouer la session
             </span>
             <span
               key={cursor}
-              className="caption-rise font-mono text-[10px] font-bold uppercase tracking-widest"
+              className="caption-rise text-[11px] font-extrabold uppercase tracking-wider text-lime"
             >
               {cursor === 0
                 ? "Début"
@@ -285,12 +285,12 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
               {i < applications.length - 1 && (
                 <span
                   aria-hidden
-                  className="absolute left-[5px] top-4 bottom-0 w-[2px] bg-on-background/20"
+                  className="absolute left-[5px] top-4 bottom-0 w-[2px] bg-surface-container-highest"
                 />
               )}
               <span
                 aria-hidden
-                className="absolute left-0 top-1.5 w-3 h-3 border-2 border-on-background transition-colors duration-300"
+                className="absolute left-0 top-1.5 h-3 w-3 rounded-full transition-colors duration-300"
                 style={{
                   backgroundColor: shown
                     ? colorFor(sessionColors, app.perfumeName)
@@ -313,7 +313,7 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
                   }}
                   className={clsx(
                     "flex-1 min-w-0 text-left flex items-center gap-3.5 -mx-2 px-2 py-1 transition-colors",
-                    focused?.id === app.id && "bg-on-background/5",
+                    focused?.id === app.id && "rounded-2xl bg-surface-container-low",
                   )}
                 >
                   <PhotoThumb
@@ -322,10 +322,10 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
                     className="w-12 h-12 shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="font-mono text-[9px] uppercase tracking-widest opacity-50">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
                       {timeOf(app.appliedAt)} · {BODY_ZONE_LABELS[app.bodyZone]}
                     </p>
-                    <p className="font-sans font-bold text-sm tracking-tight truncate mt-0.5 flex items-center gap-1.5">
+                    <p className="mt-0.5 flex items-center gap-1.5 truncate text-sm font-extrabold tracking-tight">
                       {app.perfumeName}
                       {app.verdict && (
                         <Icon
@@ -337,10 +337,10 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
                       )}
                     </p>
                     {app.note && (
-                      <p className="text-xs opacity-60 truncate">{app.note}</p>
+                      <p className="truncate text-xs text-on-surface-variant">{app.note}</p>
                     )}
                     {app.impressions.length > 0 && (
-                      <p className="font-mono text-[9px] uppercase tracking-widest opacity-40 mt-0.5">
+                      <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                         {app.impressions.length} impression
                         {app.impressions.length > 1 ? "s" : ""} drydown
                       </p>
@@ -354,7 +354,7 @@ export function WalkReplayScreen({ walkId }: { walkId: string }) {
                     setCursor(Math.max(cursor, i + 1));
                     setOpenZone(app.bodyZone);
                   }}
-                  className="shrink-0 w-8 h-8 border-2 border-on-background/40 hover:border-on-background flex items-center justify-center active:scale-95 transition-all"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-container-low active:scale-95 transition-transform"
                 >
                   <Icon name="layers" size={15} />
                 </button>

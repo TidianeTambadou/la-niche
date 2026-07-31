@@ -1,8 +1,6 @@
 "use client";
 
-import { SectionLabel } from "@/shared/ui/brutalist/SectionLabel";
 import { PhotoThumb } from "@/shared/ui/PhotoThumb";
-import { Icon } from "@/shared/ui/Icon";
 import { PriorityDots } from "@/features/wishlist/presentation/StatusBadge";
 import type { WishlistItem } from "@/features/wishlist/domain/wishlist-item";
 
@@ -15,9 +13,8 @@ type Props = {
 };
 
 /**
- * Brief d'avant-balade — le court rappel des parfums à sentir, affiché
- * juste après l'ouverture de la session. Cascade `done-screen`, priorités
- * en tête, un seul geste pour entrer en boutique.
+ * Brief d'avant-balade Club — le rappel des parfums à sentir, priorités
+ * en tête, un seul geste pour entrer.
  */
 export function WalkBriefOverlay({ wishlist, onEnter }: Props) {
   const toSmell = wishlist
@@ -27,39 +24,36 @@ export function WalkBriefOverlay({ wishlist, onEnter }: Props) {
   const rest = toSmell.length - shown.length;
 
   return (
-    <div className="fixed inset-0 z-[60] bg-background flex items-center justify-center px-7 overflow-y-auto">
-      <div className="done-screen flex flex-col gap-5 max-w-sm w-full py-10">
-        <div className="done-brand">
-          <SectionLabel>Avant d&apos;entrer</SectionLabel>
-        </div>
-
-        <div className="done-title">
-          <h2 className="font-sans font-black text-3xl tracking-tighter uppercase leading-none">
+    <div className="fixed inset-0 z-[60] overflow-y-auto bg-background px-6">
+      <div className="done-screen mx-auto flex min-h-full max-w-sm flex-col justify-center gap-4 py-10">
+        <div className="done-check rounded-[26px] bg-pop p-6 text-on-pop">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] opacity-80">
+            Avant d&apos;entrer
+          </p>
+          <h2 className="title-mega mt-1 text-5xl">
             À sentir
-            <span className="block ml-5">Aujourd&apos;hui</span>
+            <br />
+            aujourd&apos;hui
           </h2>
-          <div className="done-underline h-[3px] bg-on-background mt-3 max-w-[120px]" />
         </div>
 
         {shown.length > 0 ? (
-          <ul className="done-headline flex flex-col gap-2.5">
+          <ul className="done-title flex flex-col gap-2.5">
             {shown.map((item, i) => (
               <li
                 key={item.id}
-                className="reveal-fade-in flex items-center gap-3.5 border-2 border-on-background p-3"
-                style={{ animationDelay: `${700 + i * 110}ms` }}
+                className="reveal-fade-in flex items-center gap-3.5 rounded-[22px] bg-surface-container-low p-3.5"
+                style={{ animationDelay: `${500 + i * 100}ms` }}
               >
                 <PhotoThumb
                   path={item.photoPath}
                   alt={item.name}
-                  className="w-11 h-11 shrink-0"
+                  className="h-11 w-11 shrink-0"
                 />
-                <div className="flex-1 min-w-0">
-                  <p className="font-sans font-bold text-sm tracking-tight truncate">
-                    {item.name}
-                  </p>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-extrabold">{item.name}</p>
                   {item.house && (
-                    <p className="font-cormorant italic text-sm opacity-60 truncate">
+                    <p className="truncate text-xs font-medium text-on-surface-variant">
                       {item.house}
                     </p>
                   )}
@@ -69,26 +63,25 @@ export function WalkBriefOverlay({ wishlist, onEnter }: Props) {
             ))}
             {rest > 0 && (
               <li
-                className="reveal-fade-in text-center font-mono text-[10px] uppercase tracking-widest opacity-50"
-                style={{ animationDelay: `${700 + shown.length * 110}ms` }}
+                className="reveal-fade-in text-center text-[11px] font-bold text-on-surface-variant"
+                style={{ animationDelay: `${500 + shown.length * 100}ms` }}
               >
                 + {rest} autre{rest > 1 ? "s" : ""} dans la wishlist
               </li>
             )}
           </ul>
         ) : (
-          <p className="done-headline font-cormorant italic text-lg opacity-70">
-            « Rien en attente — laisse ton nez décider aujourd&apos;hui. »
+          <p className="done-title rounded-[22px] bg-surface-container-low p-5 text-center text-sm font-semibold text-on-surface-variant">
+            Rien en attente — laisse ton nez décider aujourd&apos;hui 👃
           </p>
         )}
 
         <button
           type="button"
           onClick={onEnter}
-          className="done-cta press-cta w-full font-sans font-semibold text-sm tracking-widest uppercase bg-on-background text-background border-2 border-on-background px-6 py-4 shadow-[4px_4px_0px_0px_currentColor] inline-flex items-center justify-center gap-2"
+          className="done-cta w-full rounded-full bg-on-background px-6 py-4 text-[13px] font-extrabold uppercase tracking-wider text-on-primary active:scale-95 transition-transform"
         >
-          <Icon name="colorize" size={16} />
-          C&apos;est parti →
+          Let&apos;s go →
         </button>
       </div>
     </div>
